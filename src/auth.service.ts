@@ -21,7 +21,6 @@ export class AuthService {
     
     // Set up file storage for users
     this.usersFilePath = path.join(__dirname, '../data', 'users.json');
-    this.loadUsers();
   }
 
   loadUsers() {
@@ -46,6 +45,7 @@ export class AuthService {
   }
 
   async register(email: string, password: string): Promise<User> {
+    await this.loadUsers();
     // Check if user already exists
     const existingUser = this.users.find(u => u.email === email);
     if (existingUser) {
@@ -83,12 +83,13 @@ export class AuthService {
     };
 
     this.users.push(newUser);
-    this.saveUsers();
+    await this.saveUsers();
     console.log('User registered:', newUser.email);
     return newUser;
   }
 
   async login(email: string, password: string): Promise<User | null> {
+    await this.loadUsers();
     const user = this.users.find(u => u.email === email);
     if (user && await bcrypt.compare(password, user.password)) {
       console.log('User logged in:', user.email);
@@ -98,6 +99,7 @@ export class AuthService {
   }
 
   async getUser(id: string): Promise<User | undefined> {
+    await this.loadUsers();
     console.log('Getting user with id:', id);
     const user = this.users.find(u => u.id === id);
     console.log('Found user:', user);

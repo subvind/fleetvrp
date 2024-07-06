@@ -14,7 +14,6 @@ export class CookieStrategy extends PassportStrategy(Strategy, 'cookie') {
 
   async validate(userId: string): Promise<any> {
     console.log('Validating userId:', userId);
-    await this.authService.loadUsers();
     const user = await this.authService.getUser(userId);
     if (!user) {
       console.log('User not found for userId:', userId);
