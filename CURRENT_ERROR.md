@@ -1,1 +1,0 @@
-code a login/register page that integrates with stripe customers then make the rest of the app protected

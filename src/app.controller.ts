@@ -25,22 +25,22 @@ export class AppController {
   registerPage() {
     return {};
   }
-  
+
   @Post('login')
   async login(@Body() body: { email: string; password: string }, @Res({ passthrough: true }) res: Response) {
     const user = await this.authService.login(body.email, body.password);
     if (user) {
       res.cookie('userId', user.id, { httpOnly: true });
-      return { success: true };
+      return res.redirect('/dashboard');
     }
-    return { success: false };
+    return res.redirect('/login?error=1');
   }
   
   @Post('register')
   async register(@Body() body: { email: string; password: string }, @Res({ passthrough: true }) res: Response) {
     const user = await this.authService.register(body.email, body.password);
     res.cookie('userId', user.id, { httpOnly: true });
-    return { success: true };
+    return res.redirect('/dashboard');
   }
 
   @Get('dashboard')

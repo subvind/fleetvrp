@@ -27,12 +27,29 @@ import fs from 'fs/promises';
 import path from 'path';
 
 // List of files to be merged into PROMPT.md
+// const filesToMerge = [
+//   './src/app.controller.ts',
+//   './src/app.module.ts',
+//   './src/app.service.ts',
+//   './src/main.ts',
+//   './views/index.ejs',
+//   './CURRENT_ERROR.md',
+//   './TODO.md'
+// ];
+
 const filesToMerge = [
+  './src/auth/auth.module.ts',
+  './src/auth/cookie.strategy.ts',
+  './src/types/express.d.ts',
   './src/app.controller.ts',
   './src/app.module.ts',
   './src/app.service.ts',
+  './src/auth.service.ts',
   './src/main.ts',
-  './views/index.ejs',
+  './src/user.model.ts',
+  './views/login.ejs',
+  './views/register.ejs',
+  './views/dashboard.ejs',
   './CURRENT_ERROR.md',
   './TODO.md'
 ];
