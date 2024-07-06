@@ -1,10 +1,13 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, Inject } from '@nestjs/common';
 import { User } from './user.model';
 import * as bcrypt from 'bcrypt';
 import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
+import { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+
 
 @Injectable()
 export class AuthService {
@@ -12,7 +15,10 @@ export class AuthService {
   private stripe: Stripe;
   private readonly usersFilePath: string;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache
+  ) {
     const stripeSecretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
     if (!stripeSecretKey) {
       throw new Error('STRIPE_SECRET_KEY is not defined in the environment variables');
@@ -21,23 +27,29 @@ export class AuthService {
     
     // Set up file storage for users
     this.usersFilePath = path.join(__dirname, '../data', 'users.json');
+    this.loadUsers();
   }
 
-  loadUsers() {
+  async loadUsers() {
     try {
       if (fs.existsSync(this.usersFilePath)) {
         const data = fs.readFileSync(this.usersFilePath, 'utf8');
-        this.users = JSON.parse(data);
+        this.users = JSON.parse(data) as User[];
+        await this.cacheManager.set('users', this.users);
         console.log('Users loaded from file');
+      } else {
+        this.users = [];
       }
     } catch (error) {
       console.error('Error loading users:', error);
     }
   }
 
-  saveUsers() {
+  async saveUsers() {
     try {
-      fs.writeFileSync(this.usersFilePath, JSON.stringify(this.users, null, 2));
+      const data = JSON.stringify(this.users, null, 2);
+      await this.cacheManager.set('users', this.users);
+      fs.writeFileSync(this.usersFilePath, data);
       console.log('Users saved to file');
     } catch (error) {
       console.error('Error saving users:', error);
@@ -45,9 +57,11 @@ export class AuthService {
   }
 
   async register(email: string, password: string): Promise<User> {
-    await this.loadUsers();
+    let users = await this.cacheManager.get<User[]>('users') || [];
+    console.log(users)
+
     // Check if user already exists
-    const existingUser = this.users.find(u => u.email === email);
+    const existingUser = users.find(u => u.email === email);
     if (existingUser) {
       throw new ConflictException('User already exists');
     }
@@ -89,8 +103,9 @@ export class AuthService {
   }
 
   async login(email: string, password: string): Promise<User | null> {
-    await this.loadUsers();
-    const user = this.users.find(u => u.email === email);
+    let users = await this.cacheManager.get<User[]>('users') || [];
+
+    const user = users.find(u => u.email === email);
     if (user && await bcrypt.compare(password, user.password)) {
       console.log('User logged in:', user.email);
       return user;
@@ -99,9 +114,10 @@ export class AuthService {
   }
 
   async getUser(id: string): Promise<User | undefined> {
-    await this.loadUsers();
+    let users = await this.cacheManager.get<User[]>('users') || [];
+
     console.log('Getting user with id:', id);
-    const user = this.users.find(u => u.id === id);
+    const user = users.find(u => u.id === id);
     console.log('Found user:', user);
     return user;
   }

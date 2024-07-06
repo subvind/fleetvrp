@@ -33,7 +33,6 @@ export class CookieStrategy extends PassportStrategy(Strategy, 'cookie') {
 
   async validate(userId: string): Promise<any> {
     console.log('Validating userId:', userId);
-    await this.authService.loadUsers();
     const user = await this.authService.getUser(userId);
     if (!user) {
       console.log('User not found for userId:', userId);
@@ -128,11 +127,17 @@ import { AppService } from './app.service';
 import { AuthService } from './auth.service';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      }),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 86400000, // 1 day in ms
+      max: 100, // maximum number of items in cache
     }),
     AuthModule,
   ],
@@ -158,13 +163,16 @@ export class AppService {
 
 ### ./src/auth.service.ts
 ```ts
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, Inject } from '@nestjs/common';
 import { User } from './user.model';
 import * as bcrypt from 'bcrypt';
 import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
+import { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+
 
 @Injectable()
 export class AuthService {
@@ -172,7 +180,10 @@ export class AuthService {
   private stripe: Stripe;
   private readonly usersFilePath: string;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache
+  ) {
     const stripeSecretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
     if (!stripeSecretKey) {
       throw new Error('STRIPE_SECRET_KEY is not defined in the environment variables');
@@ -184,21 +195,26 @@ export class AuthService {
     this.loadUsers();
   }
 
-  loadUsers() {
+  async loadUsers() {
     try {
       if (fs.existsSync(this.usersFilePath)) {
         const data = fs.readFileSync(this.usersFilePath, 'utf8');
-        this.users = JSON.parse(data);
+        this.users = JSON.parse(data) as User[];
+        await this.cacheManager.set('users', JSON.stringify(data, null, 2));
         console.log('Users loaded from file');
+      } else {
+        this.users = [];
       }
     } catch (error) {
       console.error('Error loading users:', error);
     }
   }
 
-  saveUsers() {
+  async saveUsers() {
     try {
-      fs.writeFileSync(this.usersFilePath, JSON.stringify(this.users, null, 2));
+      const data = JSON.stringify(this.users, null, 2);
+      await this.cacheManager.set('users', data);
+      fs.writeFileSync(this.usersFilePath, data);
       console.log('Users saved to file');
     } catch (error) {
       console.error('Error saving users:', error);
@@ -206,8 +222,12 @@ export class AuthService {
   }
 
   async register(email: string, password: string): Promise<User> {
+    const data: string = await this.cacheManager.get('users');
+    let users = JSON.parse(data)
+    console.log(users)
+
     // Check if user already exists
-    const existingUser = this.users.find(u => u.email === email);
+    const existingUser = users.find(u => u.email === email);
     if (existingUser) {
       throw new ConflictException('User already exists');
     }
@@ -243,12 +263,14 @@ export class AuthService {
     };
 
     this.users.push(newUser);
-    this.saveUsers();
+    await this.saveUsers();
     console.log('User registered:', newUser.email);
     return newUser;
   }
 
   async login(email: string, password: string): Promise<User | null> {
+    let data: string = await this.cacheManager.get('users');
+    this.users = JSON.parse(data);
     const user = this.users.find(u => u.email === email);
     if (user && await bcrypt.compare(password, user.password)) {
       console.log('User logged in:', user.email);
@@ -258,6 +280,8 @@ export class AuthService {
   }
 
   async getUser(id: string): Promise<User | undefined> {
+    let data: string = await this.cacheManager.get('users');
+    this.users = JSON.parse(data);
     console.log('Getting user with id:', id);
     const user = this.users.find(u => u.id === id);
     console.log('Found user:', user);
@@ -412,7 +436,22 @@ export class User {
 
 ### ./CURRENT_ERROR.md
 ```md
-
+Application is running on: http://localhost:3000
+[
+  {
+    "id": "1720306394678",
+    "email": "travis.burandt@gmail.com",
+    "password": "$2b$10$nouxt7Hmh/bSGqu8Q0dnoeYwelxoUQuLZM88RqXQc2xS4nnKqGYeW",
+    "stripeCustomerId": "cus_QQUxRD5F7Pbga0"
+  }
+]
+[Nest] 31737  - 07/06/2024, 6:00:10 PM   ERROR [ExceptionsHandler] users.find is not a function
+TypeError: users.find is not a function
+    at AuthService.register (/Users/subvind/Projects/fleetvrp/src/auth.service.ts:65:32)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at AppController.register (/Users/subvind/Projects/fleetvrp/src/app.controller.ts:41:18)
+    at async /Users/subvind/Projects/fleetvrp/node_modules/@nestjs/core/router/router-execution-context.js:46:28
+    at async /Users/subvind/Projects/fleetvrp/node_modules/@nestjs/core/router/router-proxy.js:9:17
 ```
 
 ### ./TODO.md
