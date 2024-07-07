@@ -1,74 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FleetVRP</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/css/foundation.min.css">
-    <script src="https://unpkg.com/htmx.org@1.6.1"></script>
-    <style>
-        body {
-            background-color: #f0f0f0;
-        }
-        .hero {
-            background-color: #1779ba;
-            color: white;
-            padding: 4rem 0;
-            margin-bottom: 2rem;
-        }
-        .card {
-            border: none;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetVRP</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/css/foundation.min.css">
+  <script src="https://unpkg.com/htmx.org@1.6.1"></script>
+  <style>
+    body {
+      background-color: #f0f0f0;
+    }
+
+    .hero {
+      background-color: #1779ba;
+      color: white;
+      padding: 4rem 0;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .narrow-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+  </style>
 </head>
+
 <body>
-    <main style="min-height: 100vh;">
+  <main style="min-height: 100vh;">
 
-      <div class="hero">
-          <div class="grid-container">
-              <div class="grid-x grid-padding-x align-center text-center">
-                  <div class="cell medium-8">
-                      <h1>FleetVRP</h1>
-                      <p class="lead"><%= message %></p>
-                  </div>
-              </div>
-          </div>
-      </div>
-  
+    <div class="hero">
       <div class="grid-container">
-          <div class="grid-x grid-padding-x align-center">
-              <div class="cell medium-4">
-                  <div class="card">
-                      <div class="card-section text-center">
-                          <h3>New User?</h3>
-                          <p>Create an account to get started with our amazing services.</p>
-                          <a href="/register" class="button large expanded">Register</a>
-                      </div>
-                  </div>
-              </div>
-              <div class="cell medium-4">
-                  <div class="card">
-                      <div class="card-section text-center">
-                          <h3>Returning User?</h3>
-                          <p>Welcome back! Sign in to access your account.</p>
-                          <a href="/login" class="button large expanded">Login</a>
-                      </div>
-                  </div>
-              </div>
+        <div class="grid-x grid-padding-x align-center text-center">
+          <div class="cell medium-8">
+            <h1>FleetVRP</h1>
+            <p class="lead">
+              <%= message %>
+            </p>
           </div>
+        </div>
       </div>
-    </main>
+    </div>
 
-    <footer class="text-center" style="margin-top: 2rem; padding: 1rem 0; background-color: #e6e6e6;">
-        <p>&copy; <%= new Date().getFullYear(); %> fleetvrp.com. All rights reserved.</p>
-    </footer>
+    <div class="grid-container narrow-container">
+      <% if (user) { %>
+        <div class="grid-x grid-padding-x align-center">
+          <div class="cell medium-6">
+            <div class="card">
+              <div class="card-section text-center">
+                <h3>VRP: Solver</h3>
+                <p>Setup and configure the backend queue and worker nodes used to run VRP algorithms.</p>
+                <a href="/app/solver" class="button large expanded">Solver</a>
+              </div>
+            </div>
+          </div>
+          <div class="cell medium-6">
+            <div class="card">
+              <div class="card-section text-center">
+                <h3>VRP: Planner</h3>
+                <p>Look at the backlog of orders and schedule/dispatch deliveries.</p>
+                <a href="/app/planner" class="button large expanded">Planner</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="grid-x grid-padding-x align-center" style="margin-top: 2rem;">
+          <div class="cell medium-6">
+            <div class="card">
+              <div class="card-section text-center">
+                <h3>VRP: Deliver</h3>
+                <p>Stay ontop of your pre planned route.</p>
+                <a href="/app/deliver" class="button large expanded">Deliver</a>
+              </div>
+            </div>
+          </div>
+          <div class="cell medium-6">
+            <div class="card">
+              <div class="card-section text-center">
+                <h3>VRP: Order</h3>
+                <p>Place customer work orders into the planner backlog.</p>
+                <a href="/app/order" class="button large expanded">Order</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <br />
+        <div class="grid-x grid-padding-x align-center">
+          <div class="cell medium-6">
+            <h5 class="text-center">Welcome, <%= user.email %>!</h5>
+            <p>Your Stripe Customer ID: <%= user.stripeCustomerId %>
+            </p>
+            <form action="/logout" method="POST">
+              <button type="submit" class="button expanded secondary">Logout</button>
+            </form>
+          </div>
+        </div>
+        <% } else { %>
+          <div class="grid-x grid-padding-x align-center">
+            <div class="cell medium-6">
+              <div class="card">
+                <div class="card-section text-center">
+                  <h3>New User?</h3>
+                  <p>Create an account to get started with our amazing services.</p>
+                  <a href="/register" class="button large expanded">Register</a>
+                </div>
+              </div>
+            </div>
+            <div class="cell medium-6">
+              <div class="card">
+                <div class="card-section text-center">
+                  <h3>Returning User?</h3>
+                  <p>Welcome back! Sign in to access your account.</p>
+                  <a href="/login" class="button large expanded">Login</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <% } %>
+    </div>
+  </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/js/foundation.min.js"></script>
-    <script>
-        $(document).foundation();
-    </script>
+  <footer class="text-center" style="margin-top: 2rem; padding: 1rem 0; background-color: #e6e6e6;">
+    <p>&copy; <%= new Date().getFullYear(); %> fleetvrp.com. All rights reserved.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/js/foundation.min.js"></script>
+  <script>
+    $(document).foundation();
+  </script>
 </body>
+
 </html>

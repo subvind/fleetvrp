@@ -10,8 +10,14 @@ export class AppController {
 
   @Get()
   @Render('index')
-  root() {
-    return { message: 'Vehicle Routing Problem' };
+  async root(@Req() req: Request) {
+    let user: User | undefined;
+    const userId = req.cookies['userId'];
+    if (userId) {
+      user = await this.authService.getUser(userId);
+    }
+
+    return { user, message: 'Vehicle Routing Problem' };
   }
 
   @Get('login')
@@ -31,7 +37,7 @@ export class AppController {
     const user = await this.authService.login(body.email, body.password);
     if (user) {
       res.cookie('userId', user.id, { httpOnly: true });
-      return res.redirect('/dashboard');
+      return res.redirect('/');
     }
     return res.redirect('/login?error=1');
   }
@@ -40,7 +46,7 @@ export class AppController {
   async register(@Body() body: { email: string; password: string }, @Res({ passthrough: true }) res: Response) {
     const user = await this.authService.register(body.email, body.password);
     res.cookie('userId', user.id, { httpOnly: true });
-    return res.redirect('/dashboard');
+    return res.redirect('/');
   }
 
   @Get('dashboard')

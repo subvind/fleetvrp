@@ -118,7 +118,6 @@ export class AuthService {
 
     console.log('Getting user with id:', id);
     const user = users.find(u => u.id === id);
-    console.log('Found user:', user);
     return user;
   }
 }

@@ -49,7 +49,6 @@ const filesToMerge = [
   './src/user.model.ts',
   './views/login.ejs',
   './views/register.ejs',
-  './views/dashboard.ejs',
   './CURRENT_ERROR.md',
   './TODO.md'
 ];
