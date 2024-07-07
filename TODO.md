@@ -10,4 +10,4 @@ TODO RULES:
  2) i'd like TypeScript or EJS code in response to my queries!
  3) keep console.log statements for debugging
  4) keep code comments for documentation
- 5) use Foundation CSS library
+ 5) use mdui CSS library

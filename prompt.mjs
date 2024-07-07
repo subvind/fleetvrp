@@ -38,17 +38,20 @@ import path from 'path';
 // ];
 
 const filesToMerge = [
-  './src/auth/auth.module.ts',
-  './src/auth/cookie.strategy.ts',
-  './src/types/express.d.ts',
-  './src/app.controller.ts',
-  './src/app.module.ts',
-  './src/app.service.ts',
-  './src/auth.service.ts',
-  './src/main.ts',
-  './src/user.model.ts',
+  // './src/auth/auth.module.ts',
+  // './src/auth/cookie.strategy.ts',
+  // './src/types/express.d.ts',
+  // './src/app.controller.ts',
+  // './src/app.module.ts',
+  // './src/app.service.ts',
+  // './src/auth.service.ts',
+  // './src/main.ts',
+  // './src/user.model.ts',
+  './views/index.ejs',
   './views/login.ejs',
   './views/register.ejs',
+  './views/splash.ejs',
+  './views/style.ejs',
   './CURRENT_ERROR.md',
   './TODO.md'
 ];

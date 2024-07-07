@@ -1,366 +1,215 @@
 Please follow the instructions within ./TODO.md! Thank you :)
-### ./src/auth/auth.module.ts
-```ts
-import { Module } from '@nestjs/common';
-import { PassportModule } from '@nestjs/passport';
-import { AuthService } from '../auth.service';
-import { CookieStrategy } from './cookie.strategy';
-import { ConfigModule } from '@nestjs/config';
+### ./views/index.ejs
+```ejs
+<!DOCTYPE html>
+<html lang="en">
 
-@Module({
-  imports: [PassportModule, ConfigModule],
-  providers: [AuthService, CookieStrategy],
-  exports: [AuthService],
-})
-export class AuthModule {}
-```
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetVRP: Route Optimization Software</title>
+  <!-- Materialize CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://unpkg.com/htmx.org@1.6.1"></script>
+  <%- include('style.ejs') %>
+</head>
 
-### ./src/auth/cookie.strategy.ts
-```ts
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PassportStrategy } from '@nestjs/passport';
-import { Strategy } from 'passport-cookie';
-import { AuthService } from '../auth.service';
+<body>
+  <%- include('splash.ejs') %>
 
-@Injectable()
-export class CookieStrategy extends PassportStrategy(Strategy, 'cookie') {
-  constructor(private authService: AuthService) {
-    super({
-      cookieName: 'userId',
-      signed: false,
-    });
-  }
+  <main style="min-height: calc(100vh - 300px);">
+    <div class="container">
+      <% if (user) { %>
+        <div class="row">
+          <div class="col s12 m6">
+            <div class="card">
+              <div class="card-content">
+                <span class="card-title">VRP: Owner</span>
+                <p>Import and export data and setup Managers.</p>
+              </div>
+              <div class="card-action">
+                <a href="/app/owner" class="waves-effect waves-light btn blue darken-2 fluid">Owner</a>
+              </div>
+            </div>
+          </div>
+          <div class="col s12 m6">
+            <div class="card">
+              <div class="card-content">
+                <span class="card-title">VRP: Manager</span>
+                <p>Configure which users can see which VRP modules.</p>
+              </div>
+              <div class="card-action">
+                <a href="/app/manager" class="waves-effect waves-light btn blue darken-2 fluid">Manager</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col s12 m6">
+            <div class="card">
+              <div class="card-content">
+                <span class="card-title">VRP: Solver</span>
+                <p>Calculate VRP algorithms in the cloud or on local machines.</p>
+              </div>
+              <div class="card-action">
+                <a href="/app/solver" class="waves-effect waves-light btn blue darken-2 fluid">Solver</a>
+              </div>
+            </div>
+          </div>
+          <div class="col s12 m6">
+            <div class="card">
+              <div class="card-content">
+                <span class="card-title">VRP: Planner</span>
+                <p>Look at the backlog of orders, run them through the solver, and sync new routes with Pickup and Delivery.</p>
+              </div>
+              <div class="card-action">
+                <a href="/app/planner" class="waves-effect waves-light btn blue darken-2 fluid">Planner</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col s12 m6">
+            <div class="card">
+              <div class="card-content">
+                <span class="card-title">VRP: Pickup & Delivery</span>
+                <p>Stay ontop of your pre planned route.</p>
+              </div>
+              <div class="card-action">
+                <a href="/app/pickup-and-delivery" class="waves-effect waves-light btn blue darken-2 fluid">Pickup & Delivery</a>
+              </div>
+            </div>
+          </div>
+          <div class="col s12 m6">
+            <div class="card">
+              <div class="card-content">
+                <span class="card-title">VRP: Order</span>
+                <p>Place customer work orders into the Planner backlog.</p>
+              </div>
+              <div class="card-action">
+                <a href="/app/order" class="waves-effect waves-light btn blue darken-2 fluid">Order</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col s12 m6 offset-m3">
+            <div class="card">
+              <div class="card-content">
+                <span class="card-title">Welcome, <%= user.email %>!</span>
+                <p>Your Stripe Customer ID: <%= user.stripeCustomerId %></p>
+              </div>
+              <div class="card-action">
+                <form action="/logout" method="POST">
+                  <button type="submit" class="waves-effect waves-light btn grey lighten-1 black-text fluid">Logout</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% } else { %>
+        <div class="row">
+          <div class="col s12 m6">
+            <div class="card">
+              <div class="card-content">
+                <span class="card-title">New User?</span>
+                <p>Create an account to get started with our amazing services.</p>
+              </div>
+              <div class="card-action">
+                <a href="/register" class="waves-effect waves-light btn blue darken-2 fluid">Register</a>
+              </div>
+            </div>
+          </div>
+          <div class="col s12 m6">
+            <div class="card">
+              <div class="card-content">
+                <span class="card-title">Returning User?</span>
+                <p>Welcome back! Sign in to access your account.</p>
+              </div>
+              <div class="card-action">
+                <a href="/login" class="waves-effect waves-light btn blue darken-2 fluid">Login</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% } %>
+    </div>
+    <br />
+    <br />
+    <br />
+  </main>
 
-  async validate(userId: string): Promise<any> {
-    console.log('Validating userId:', userId);
-    const user = await this.authService.getUser(userId);
-    if (!user) {
-      console.log('User not found for userId:', userId);
-      throw new UnauthorizedException();
-    }
-    console.log('User found:', user);
-    return user;
-  }
-}
-```
+  <%- include('footer.ejs') %>
 
-### ./src/types/express.d.ts
-```ts
-import { User } from '../user.model';
+  <!-- Materialize JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+    // Initialize Materialize components
+    M.AutoInit();
+  </script>
+</body>
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: User;
-    }
-  }
-}
-```
-
-### ./src/app.controller.ts
-```ts
-import { Controller, Get, Post, Render, Body, Res, Req, UseGuards } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { Response, Request } from 'express';
-import { AuthGuard } from '@nestjs/passport';
-import { User } from './user.model';
-
-@Controller()
-export class AppController {
-  constructor(private authService: AuthService) {}
-
-  @Get()
-  @Render('index')
-  root() {
-    return { message: 'Vehicle Routing Problem' };
-  }
-
-  @Get('login')
-  @Render('login')
-  loginPage() {
-    return {};
-  }
-
-  @Get('register')
-  @Render('register')
-  registerPage() {
-    return {};
-  }
-
-  @Post('login')
-  async login(@Body() body: { email: string; password: string }, @Res({ passthrough: true }) res: Response) {
-    const user = await this.authService.login(body.email, body.password);
-    if (user) {
-      res.cookie('userId', user.id, { httpOnly: true });
-      return res.redirect('/dashboard');
-    }
-    return res.redirect('/login?error=1');
-  }
-  
-  @Post('register')
-  async register(@Body() body: { email: string; password: string }, @Res({ passthrough: true }) res: Response) {
-    const user = await this.authService.register(body.email, body.password);
-    res.cookie('userId', user.id, { httpOnly: true });
-    return res.redirect('/dashboard');
-  }
-
-  @Get('dashboard')
-  @UseGuards(AuthGuard('cookie'))
-  @Render('dashboard')
-  dashboard(@Req() req: Request) {
-    return { user: req.user as User };
-  }
-
-  @Post('logout')
-  logout(@Res() res: Response) {
-    res.clearCookie('userId');
-    return res.redirect('/');
-  }
-}
-```
-
-### ./src/app.module.ts
-```ts
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { AuthService } from './auth.service';
-import { ConfigModule } from '@nestjs/config';
-import { AuthModule } from './auth/auth.module';
-import { CacheModule } from '@nestjs/cache-manager';
-
-@Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      }),
-    CacheModule.register({
-      isGlobal: true,
-      ttl: 86400000, // 1 day in ms
-      max: 100, // maximum number of items in cache
-    }),
-    AuthModule,
-  ],
-  controllers: [AppController],
-  providers: [AppService, AuthService],
-})
-export class AppModule {}
-
-```
-
-### ./src/app.service.ts
-```ts
-import { Injectable } from '@nestjs/common';
-
-@Injectable()
-export class AppService {
-  getHello(): string {
-    return 'Hello World!';
-  }
-}
-
-```
-
-### ./src/auth.service.ts
-```ts
-import { Injectable, ConflictException, Inject } from '@nestjs/common';
-import { User } from './user.model';
-import * as bcrypt from 'bcrypt';
-import Stripe from 'stripe';
-import { ConfigService } from '@nestjs/config';
-import * as fs from 'fs';
-import * as path from 'path';
-import { Cache } from 'cache-manager';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-
-
-@Injectable()
-export class AuthService {
-  private users: User[] = [];
-  private stripe: Stripe;
-  private readonly usersFilePath: string;
-
-  constructor(
-    private configService: ConfigService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache
-  ) {
-    const stripeSecretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
-    if (!stripeSecretKey) {
-      throw new Error('STRIPE_SECRET_KEY is not defined in the environment variables');
-    }
-    this.stripe = new Stripe(stripeSecretKey, { apiVersion: '2024-06-20' });
-    
-    // Set up file storage for users
-    this.usersFilePath = path.join(__dirname, '../data', 'users.json');
-    this.loadUsers();
-  }
-
-  async loadUsers() {
-    try {
-      if (fs.existsSync(this.usersFilePath)) {
-        const data = fs.readFileSync(this.usersFilePath, 'utf8');
-        this.users = JSON.parse(data) as User[];
-        await this.cacheManager.set('users', JSON.stringify(data, null, 2));
-        console.log('Users loaded from file');
-      } else {
-        this.users = [];
-      }
-    } catch (error) {
-      console.error('Error loading users:', error);
-    }
-  }
-
-  async saveUsers() {
-    try {
-      const data = JSON.stringify(this.users, null, 2);
-      await this.cacheManager.set('users', data);
-      fs.writeFileSync(this.usersFilePath, data);
-      console.log('Users saved to file');
-    } catch (error) {
-      console.error('Error saving users:', error);
-    }
-  }
-
-  async register(email: string, password: string): Promise<User> {
-    const data: string = await this.cacheManager.get('users');
-    let users = JSON.parse(data)
-    console.log(users)
-
-    // Check if user already exists
-    const existingUser = users.find(u => u.email === email);
-    if (existingUser) {
-      throw new ConflictException('User already exists');
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    let stripeCustomerId: string;
-
-    try {
-      // Check if customer already exists in Stripe
-      const existingCustomers = await this.stripe.customers.list({ email: email, limit: 1 });
-      
-      if (existingCustomers.data.length > 0) {
-        // Customer already exists, use the existing customer ID
-        stripeCustomerId = existingCustomers.data[0].id;
-        console.log(`Using existing Stripe customer: ${stripeCustomerId}`);
-      } else {
-        // Customer doesn't exist, create a new one
-        const newCustomer = await this.stripe.customers.create({ email });
-        stripeCustomerId = newCustomer.id;
-        console.log(`Created new Stripe customer: ${stripeCustomerId}`);
-      }
-    } catch (error) {
-      console.error('Error with Stripe operation:', error);
-      throw new Error('Failed to process Stripe customer');
-    }
-
-    const newUser: User = {
-      id: Date.now().toString(),
-      email,
-      password: hashedPassword,
-      stripeCustomerId,
-    };
-
-    this.users.push(newUser);
-    await this.saveUsers();
-    console.log('User registered:', newUser.email);
-    return newUser;
-  }
-
-  async login(email: string, password: string): Promise<User | null> {
-    let data: string = await this.cacheManager.get('users');
-    this.users = JSON.parse(data);
-    const user = this.users.find(u => u.email === email);
-    if (user && await bcrypt.compare(password, user.password)) {
-      console.log('User logged in:', user.email);
-      return user;
-    }
-    return null;
-  }
-
-  async getUser(id: string): Promise<User | undefined> {
-    let data: string = await this.cacheManager.get('users');
-    this.users = JSON.parse(data);
-    console.log('Getting user with id:', id);
-    const user = this.users.find(u => u.id === id);
-    console.log('Found user:', user);
-    return user;
-  }
-}
-```
-
-### ./src/main.ts
-```ts
-import { NestFactory } from '@nestjs/core';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import { join } from 'path';
-import { AppModule } from './app.module';
-import * as cookieParser from 'cookie-parser';
-
-async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
-
-  app.useStaticAssets(join(__dirname, '..', 'public'));
-  app.setBaseViewsDir(join(__dirname, '..', 'views'));
-  app.setViewEngine('ejs');
-
-  app.use(cookieParser());
-
-  await app.listen(3000);
-  console.log('Application is running on: http://localhost:3000');
-}
-bootstrap();
-```
-
-### ./src/user.model.ts
-```ts
-export class User {
-  id: string;
-  email: string;
-  password: string;
-  stripeCustomerId?: string;
-}
+</html>
 ```
 
 ### ./views/login.ejs
 ```ejs
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-  <title>Login</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/css/foundation.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - FleetVRP</title>
+  <!-- Materialize CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <script src="https://unpkg.com/htmx.org@1.6.1"></script>
+  <%- include('style.ejs') %>
 </head>
 
 <body>
-  <div class="top-bar">
-    <div class="top-bar-left">
-      <ul class="menu">
-        <li class="menu-text">FleetVRP</li>
-        <li><a href="/">Home</a></li>
-      </ul>
-    </div>
-  </div>
+  <%- include('splash.ejs') %>
 
-  <div class="grid-container">
-    <div class="grid-x grid-padding-x align-center">
-      <div class="cell medium-6">
-        <h2 class="text-center">Login</h2>
-        <form action="/login" method="POST">
-          <label>Email
-            <input type="email" name="email" required>
-          </label>
-          <label>Password
-            <input type="password" name="password" required>
-          </label>
-          <button type="submit" class="button expanded">Login</button>
-        </form>
-        <p class="text-center">Don't have an account? <a href="/register">Register</a></p>
+  <main style="min-height: calc(100vh - 300px);">
+    <div class="container">
+      <div class="row">
+        <div class="col s12 m6 offset-m3">
+          <div class="card">
+            <div class="card-content">
+              <span class="card-title">Login</span>
+              <form action="/login" method="POST">
+                <div class="input-field">
+                  <input type="email" id="email" name="email" required>
+                  <label for="email">Email</label>
+                </div>
+                <div class="input-field">
+                  <input type="password" id="password" name="password" required>
+                  <label for="password">Password</label>
+                </div>
+                <button type="submit" class="btn waves-effect waves-light blue darken-2 fluid">Login</button>
+              </form>
+            </div>
+            <div class="card-action">
+              <p>Don't have an account? <a href="/register">Register</a></p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </main>
+
+  <%- include('footer.ejs') %>
+
+  <!-- Materialize JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+    // Initialize Materialize components
+    M.AutoInit();
+  </script>
 </body>
 
 </html>
@@ -369,89 +218,110 @@ export class User {
 ### ./views/register.ejs
 ```ejs
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-  <title>Register</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/css/foundation.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - FleetVRP</title>
+  <!-- Materialize CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <script src="https://unpkg.com/htmx.org@1.6.1"></script>
+  <%- include('style.ejs') %>
 </head>
 
 <body>
-  <div class="top-bar">
-    <div class="top-bar-left">
-      <ul class="menu">
-        <li class="menu-text">FleetVRP</li>
-        <li><a href="/">Home</a></li>
-      </ul>
-    </div>
-  </div>
-  
-  <div class="grid-container">
-    <div class="grid-x grid-padding-x align-center">
-      <div class="cell medium-6">
-        <h2 class="text-center">Register</h2>
-        <form action="/register" method="POST">
-          <label>Email
-            <input type="email" name="email" required>
-          </label>
-          <label>Password
-            <input type="password" name="password" required>
-          </label>
-          <button type="submit" class="button expanded">Register</button>
-        </form>
-        <p class="text-center">Already have an account? <a href="/login">Login</a></p>
+  <%- include('splash.ejs') %>
+
+  <main style="min-height: calc(100vh - 300px);">
+    <div class="container">
+      <div class="row">
+        <div class="col s12 m6 offset-m3">
+          <div class="card">
+            <div class="card-content">
+              <span class="card-title">Register</span>
+              <form action="/register" method="POST">
+                <div class="input-field">
+                  <input type="email" id="email" name="email" required>
+                  <label for="email">Email</label>
+                </div>
+                <div class="input-field">
+                  <input type="password" id="password" name="password" required>
+                  <label for="password">Password</label>
+                </div>
+                <button type="submit" class="btn waves-effect waves-light blue darken-2 fluid">Register</button>
+              </form>
+            </div>
+            <div class="card-action">
+              <p>Already have an account? <a href="/login">Login</a></p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </main>
+
+  <%- include('footer.ejs') %>
+
+  <!-- Materialize JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+    // Initialize Materialize components
+    M.AutoInit();
+  </script>
 </body>
 
 </html>
 ```
 
-### ./views/dashboard.ejs
+### ./views/splash.ejs
 ```ejs
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/css/foundation.min.css">
-    <script src="https://unpkg.com/htmx.org@1.6.1"></script>
-</head>
-<body>
-    <div class="grid-container">
-        <div class="grid-x grid-padding-x align-center">
-            <div class="cell medium-6">
-                <h2 class="text-center">Welcome, <%= user.email %>!</h2>
-                <p>Your Stripe Customer ID: <%= user.stripeCustomerId %></p>
-                <form action="/logout" method="POST">
-                    <button type="submit" class="button expanded">Logout</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
+
+<nav class="blue darken-2">
+  <div class="nav-wrapper container">
+    <a href="#" class="brand-logo">FleetVRP</a>
+    <ul id="nav-mobile" class="right hide-on-med-and-down">
+      <li><a href="/"><i class="material-icons left">home</i>Home</a></li>
+    </ul>
+  </div>
+</nav>
+<div class="hero blue darken-2">
+  <div class="container">
+    <h1 class="center-align">FleetVRP</h1>
+    <p class="center-align flow-text">Vehicle Routing Problem</p>
+  </div>
+</div>
+```
+
+### ./views/style.ejs
+```ejs
+<style>
+  body {
+    background-color: #eee;
+  }
+  .hero {
+    background-color: #1779ba;
+    color: white;
+    padding: 4rem 0;
+    margin-bottom: 2rem;
+  }
+  .card-action {
+    text-align: center;
+  }
+  .btn {
+    text-transform: none;
+  }
+  .btn.fluid {
+    width: 100%;
+  }
+</style>
 ```
 
 ### ./CURRENT_ERROR.md
 ```md
-Application is running on: http://localhost:3000
-[
-  {
-    "id": "1720306394678",
-    "email": "travis.burandt@gmail.com",
-    "password": "$2b$10$nouxt7Hmh/bSGqu8Q0dnoeYwelxoUQuLZM88RqXQc2xS4nnKqGYeW",
-    "stripeCustomerId": "cus_QQUxRD5F7Pbga0"
-  }
-]
-[Nest] 31737  - 07/06/2024, 6:00:10 PM   ERROR [ExceptionsHandler] users.find is not a function
-TypeError: users.find is not a function
-    at AuthService.register (/Users/subvind/Projects/fleetvrp/src/auth.service.ts:65:32)
-    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
-    at AppController.register (/Users/subvind/Projects/fleetvrp/src/app.controller.ts:41:18)
-    at async /Users/subvind/Projects/fleetvrp/node_modules/@nestjs/core/router/router-execution-context.js:46:28
-    at async /Users/subvind/Projects/fleetvrp/node_modules/@nestjs/core/router/router-proxy.js:9:17
+
 ```
 
 ### ./TODO.md
@@ -468,6 +338,6 @@ TODO RULES:
  2) i'd like TypeScript or EJS code in response to my queries!
  3) keep console.log statements for debugging
  4) keep code comments for documentation
- 5) use Foundation CSS library
+ 5) use mdui CSS library
 ```
 
