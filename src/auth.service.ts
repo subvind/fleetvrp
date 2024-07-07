@@ -8,7 +8,6 @@ import * as path from 'path';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
-
 @Injectable()
 export class AuthService {
   private users: User[] = [];
@@ -26,7 +25,12 @@ export class AuthService {
     this.stripe = new Stripe(stripeSecretKey, { apiVersion: '2024-06-20' });
     
     // Set up file storage for users
-    this.usersFilePath = path.join(__dirname, '../data', 'users.json');
+    let mount = this.configService.get<string>('VOLUME')
+    if (mount) {
+      this.usersFilePath = path.join(mount, 'users.json');
+    } else {
+      this.usersFilePath = path.join(__dirname, '../data', 'users.json');
+    }
     this.loadUsers();
   }
 
