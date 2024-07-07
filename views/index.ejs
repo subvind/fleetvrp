@@ -24,7 +24,7 @@
             <div class="card">
               <div class="card-content">
                 <span class="card-title">VRP: Owner</span>
-                <p>Import and export data and setup Managers.</p>
+                <p>Setup Managers. Handle payments integration with Stripe. Sync customers with CRM and orders with OMS. Import and export FleetVRP data.</p>
               </div>
               <div class="card-action">
                 <a href="/app/owner" class="waves-effect waves-light btn blue darken-2 fluid">Owner</a>
@@ -35,7 +35,7 @@
             <div class="card">
               <div class="card-content">
                 <span class="card-title">VRP: Manager</span>
-                <p>Configure which users can see which VRP modules.</p>
+                <p>Configure which users can see which VRP modules. Setup depots, fleets, vehicles, employees, and customers.</p>
               </div>
               <div class="card-action">
                 <a href="/app/manager" class="waves-effect waves-light btn blue darken-2 fluid">Manager</a>
@@ -48,7 +48,7 @@
             <div class="card">
               <div class="card-content">
                 <span class="card-title">VRP: Solver</span>
-                <p>Calculate VRP algorithms in the cloud or on local machines.</p>
+                <p>Calculate VRP algorithms in the cloud or on local machines. Algo setup requires a single redis based server and for each worker a running nestjs based server.</p>
               </div>
               <div class="card-action">
                 <a href="/app/solver" class="waves-effect waves-light btn blue darken-2 fluid">Solver</a>
@@ -59,7 +59,7 @@
             <div class="card">
               <div class="card-content">
                 <span class="card-title">VRP: Planner</span>
-                <p>Look at the backlog of orders, run them through the solver, and sync new routes with Pickup and Delivery.</p>
+                <p>Look at the backlog of orders, run them through the Solver, and sync new routes to Pickup and Delivery. Setup time windows for employees and vehicles.</p>
               </div>
               <div class="card-action">
                 <a href="/app/planner" class="waves-effect waves-light btn blue darken-2 fluid">Planner</a>
@@ -72,7 +72,7 @@
             <div class="card">
               <div class="card-content">
                 <span class="card-title">VRP: Pickup & Delivery</span>
-                <p>Stay ontop of your pre planned route.</p>
+                <p>Stay ontop of your pre planned route. Keep the Planner up to date with any work order status changes.</p>
               </div>
               <div class="card-action">
                 <a href="/app/pickup-and-delivery" class="waves-effect waves-light btn blue darken-2 fluid">Pickup & Delivery</a>
@@ -83,7 +83,7 @@
             <div class="card">
               <div class="card-content">
                 <span class="card-title">VRP: Order</span>
-                <p>Place customer work orders into the Planner backlog.</p>
+                <p>Place customer work orders into the Planner backlog. Stream events about the status of their work order to customers using email and text message.</p>
               </div>
               <div class="card-action">
                 <a href="/app/order" class="waves-effect waves-light btn blue darken-2 fluid">Order</a>
