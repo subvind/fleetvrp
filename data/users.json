@@ -10,5 +10,11 @@
     "email": "test@test.com",
     "password": "$2b$10$HPJoZOt7KZmv.x64BS49ZeXvJxgoUnDRUKr1xrlarjfr5jLKrH40q",
     "stripeCustomerId": "cus_QQX2hDlwVVtJts"
+  },
+  {
+    "id": "1720449699958",
+    "email": "travis.burandt@gmail.com",
+    "password": "$2b$10$QGGqMxB5wm9S9TUPq77KcOU/1JozJhS5niw2Y/ymudBl.5ynNnYcu",
+    "stripeCustomerId": "cus_QRB7EkPbBTFhLh"
   }
 ]

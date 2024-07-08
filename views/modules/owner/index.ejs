@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('../head', page); %>
+<body class="has-fixed-navi">
+  <%- include('../header', {
+    page,
+    user
+  }); %>
+  
+  <div style="min-height: 100vh;">
+    <%- // include('navigation'); %>
+    <%- include('../breadcrumb', {
+      links: [
+        { name: `Home`, url: `/` },
+        { name: `VRP: Owner`, url: `/app/owner` },
+      ]
+    }); %>
+  </div>
+  <%- include('../footer'); %>
+  <%- // include('session'); %>
+
+  <!-- include htmx -->
+  <script src="https://unpkg.com/htmx.org@1.9.11"></script>
+</body>
+</html>

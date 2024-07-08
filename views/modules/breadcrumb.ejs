@@ -1,0 +1,12 @@
+<nav class="black">
+  <div class="container">
+    <div class="nav-wrapper">
+      <div class="col s12">
+        <% links.forEach((value, index) => { %>
+          <a href="<%- value.url -%>" class="breadcrumb"><%- value.name -%></a>
+        <% }) %>
+        <!-- <a href="https://docs.aws.amazon.com/pdfs/wellarchitected/latest/saas-lens/wellarchitected-saas-lens.pdf#silo-pool-and-bridge-models" class="brand-logo right" target="_blank">SPB Models</a> -->
+      </div>
+    </div>
+  </div>
+</nav>

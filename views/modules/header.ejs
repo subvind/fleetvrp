@@ -1,0 +1,91 @@
+<header class="navbar-fixed">
+  <nav class="navbar white black-text">
+    <a href="#" class="brand-logo black-text"></a>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var brandLogo = document.querySelector('.brand-logo');
+
+        brandLogo.href = '//' + window.location.host;
+        brandLogo.textContent = window.location.host;
+      })
+    </script>
+    <div class="nav-wrapper">
+      <a href="#" data-target="slide-out" class="sidenav-trigger left"><i class="material-icons">menu</i></a>
+      <ul class="right">
+        <% if (user) { %>
+          <li class="hide-on-med-and-down"><a class="my-profile" href="/users/<%= user.id %>" class="black-text"><%= user.email %></a></li>
+          <li class="hide-on-med-and-up show-on-medium-and-down"><a href="/users/<%= user.id %>" class="black-text"><i class="material-icons">account_circle</i></a></li>
+        <% } else { %>
+          <li ><a href="/login" class="black-text">Login</a></li>
+          <li ><a href="/register" class="black-text">Register</a></li>
+        <% } %>
+        </ul>
+    </div>
+  </nav>
+</header>
+
+<ul id="slide-out" class="navi sidenav sidenav-fixed blue darken-2" style="transform: translateX(-105%);">
+  <li class="">
+    <nav class="">
+      <a href="/" class="brand-logo center">FleetVRP</a>
+      <!-- <a href="/" class="brand-logo center">Stirva</a> -->
+    </nav>
+  </li>
+  <li><a href="/vehicle-routing-problem" style="text-transform: none;" class="btn waves-effect blue darken-3 white-text">Vehicle Routing Problem</a></li>
+  <li>
+    <ul class="collapsible collapsible-accordion">
+      <li class="bold waves-effect active">
+        <a class="collapsible-header" tabindex="0">Modules<i class="material-icons chevron">chevron_left</i></a>
+        <div class="collapsible-body">
+          <ul>
+            <li><a href="/modules/owner" class="waves-effect">VRP: Owner<i class="material-icons">domain</i></a></li>
+            <li><a href="/modules/manager" class="waves-effect">VRP: Manager<i class="material-icons">assignment_ind</i></a></li>
+            <li><a href="/modules/solver" class="waves-effect">VRP: Solver<i class="material-icons">extension</i></a></li>
+            <li><a href="/modules/planner" class="waves-effect">VRP: Planner<i class="material-icons">event</i></a></li>
+            <li><a href="/modules/pickup-and-delivery" class="waves-effect">VRP: Pickup & Delivery<i class="material-icons">directions_car</i></a></li>
+            <li><a href="/modules/order" class="waves-effect">VRP: Order<i class="material-icons">flag</i></a></li>
+          </ul>
+        </div>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<style>
+  header {
+    background: #aaa;
+  }
+
+  header hr {
+    border-top: 1px solid #777;
+    border-bottom: 0;
+  }
+
+  header a {
+    color: #000;
+  }
+
+  header .logo {
+    color: #333;
+  }
+  header .logo :hover {
+    color: #000;
+  }
+
+  header .title {
+    color: #333;
+  }
+  header .title:hover {
+    color: #000;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var elems = document.querySelectorAll('.navi');
+    var instances = M.Sidenav.init(elems, {});
+    
+    var elems2 = document.querySelectorAll('.collapsible');
+    var instances2 = M.Collapsible.init(elems2, {});
+  });
+</script>

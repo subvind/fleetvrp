@@ -11,3 +11,4 @@ TODO RULES:
  3) keep console.log statements for debugging
  4) keep code comments for documentation
  5) use mdui CSS library
+ 6) save records to sqlite database using TypeORM

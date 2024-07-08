@@ -20,6 +20,18 @@ export class AppController {
     return { user, message: 'Vehicle Routing Problem' };
   }
 
+  @Get('vehicle-routing-problem')
+  @Render('vehicle-routing-problem')
+  async dashboard(@Req() req: Request) {
+    let user: User | undefined;
+    const userId = req.cookies['userId'];
+    if (userId) {
+      user = await this.authService.getUser(userId);
+    }
+
+    return { user, message: 'White Paper' };
+  }
+
   @Get('login')
   @Render('login')
   loginPage() {
@@ -49,16 +61,21 @@ export class AppController {
     return res.redirect('/');
   }
 
-  @Get('dashboard')
-  @UseGuards(AuthGuard('cookie'))
-  @Render('dashboard')
-  dashboard(@Req() req: Request) {
-    return { user: req.user as User };
-  }
-
   @Post('logout')
   logout(@Res() res: Response) {
     res.clearCookie('userId');
     return res.redirect('/');
+  }
+
+  @Get('modules/owner')
+  @UseGuards(AuthGuard('cookie'))
+  @Render('modules/owner/index')
+  async getAppOwnerIndex(@Req() req: Request) {
+    return {
+      user: req.user as User,
+      page: {
+        metaTitle: 'Owner - FleetVRP',
+      }
+    };
   }
 }

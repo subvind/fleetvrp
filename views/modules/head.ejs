@@ -1,0 +1,242 @@
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title><%- page.metaTitle %></title>
+
+  <!--Import Google Icon Font-->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!-- Compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <style>
+    body {
+      background-color: #eee;
+    }
+
+    .navbar-fixed nav.navbar {
+      width: 100%;
+      left: 0;
+    }
+
+    @media only screen and (min-width: 993px) {
+      .has-fixed-navi .navbar-fixed nav.navbar {
+        width: calc(100% - 300px);
+        left: 300px;
+      }
+
+      body:not(.has-fixed-navi) nav a.sidenav-trigger {
+        display: block;
+      }
+
+      body:not(.has-fixed-navi) nav.navbar .brand-logo {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%)
+      }
+    }
+
+    @media only screen and (max-width: 992px) {
+      nav.navbar a.brand-logo {
+        position: absolute;
+      }
+    }
+
+    nav.navbar {
+      z-index: 10;
+      transition: box-shadow .3s, background-color .3s;
+      padding: 0 20px;
+      background-color: #fff;
+      color: rgba(0,0,0,0.87);
+    }
+
+    nav.navbar .brand-logo {
+      position: relative;
+      float: left;
+      font-size: 18px;
+      color: rgba(0,0,0,0.87);
+      z-index: 1;
+    }
+
+    nav.navbar .brand-logo:hover {
+      text-decoration: underline;
+    }
+
+    nav.navbar .brand-logo i {
+      line-height: inherit;
+      transition: color .2s;
+    }
+
+    nav.navbar .nav-wrapper > ul > li > a {
+      display: block;
+    }
+
+    nav.navbar .sidenav-trigger {
+      margin: 0;
+    }
+
+    nav.navbar ul > li.active > a::before,
+    nav.navbar ul > li > a.active::before,
+    nav.navbar ul > li > a:hover::before {
+      transform: scaleX(1);
+    }
+
+    nav.navbar ul a {
+      color: rgba(0,0,0,0.87);
+      position: relative;
+      transition: color .2s;
+    }
+
+    nav.navbar ul a:focus {
+      outline: none;
+    }
+
+    .sidenav {
+      background-color: #448AFF;
+    }
+
+    .navi > li {
+      width: 100%;
+    }
+
+    .navi .logo-container {
+      padding: 0 16px;
+      height: 64px;
+      line-height: 64px;
+      font-size: 24px;
+      border-bottom: 1px solid rgba(0,0,0,0.2);
+      box-sizing: content-box;
+    }
+
+    .navi .logo-container i.material-icons {
+      line-height: inherit;
+    }
+
+    .navi .collapsible {
+      border-bottom: 1px solid rgba(0,0,0,0.2);
+    }
+
+    .navi .collapsible > .active .collapsible-header .chevron {
+      transform: rotate(-90deg);
+    }
+
+    .navi .collapsible > li {
+      border-bottom: 1px solid rgba(0,0,0,0.2);
+      transition: background-color .2s;
+    }
+
+    .navi .collapsible > li:hover {
+      background-color: rgba(0,0,0,0.05);
+    }
+
+    .navi .collapsible > li.waves-effect {
+      display: block;
+    }
+
+    .navi .collapsible > li:last-child {
+      border-bottom: 0;
+    }
+
+    .navi .collapsible .collapsible-header {
+      /* text-transform: none; */
+      height: 64px;
+      line-height: 64px;
+    }
+
+    .navi .collapsible .collapsible-header:hover {
+      background-color: transparent;
+    }
+
+    .navi .collapsible .collapsible-header .chevron {
+      float: right;
+      height: 24px;
+      width: 24px;
+      line-height: 24px;
+      margin: 20px 0 0 0;
+      transition: transform .2s;
+    }
+
+    .navi .collapsible .collapsible-body {
+      padding-bottom: 16px;
+      background-color: transparent;
+    }
+
+    .navi .collapsible .collapsible-body li > a {
+      padding: 0 16px;
+      transition: background-color .2s ease-out;
+    }
+
+    .navi .collapsible .collapsible-body li > a:hover,
+    .navi .collapsible .collapsible-body li > a.active {
+      background-color: rgba(0,0,0,0.07);
+    }
+
+    .navi .collapsible .collapsible-body li > a > i.material-icons {
+      margin-right: 16px;
+    }
+
+    .navi li.active > a,
+    .navi li:hover > a,
+    .navi li > a:hover,
+    .navi li > a.active {
+      background-color: rgba(0,0,0,0.05);
+    }
+
+    .navi li.active > a::before,
+    .navi li:hover > a::before,
+    .navi li > a:hover::before,
+    .navi li > a.active::before {
+      transform: scaleY(1);
+    }
+
+    .navi li > a {
+      position: relative;
+      padding: 0 16px;
+    }
+
+    .navi li > a::before {
+      left: auto;
+      right: 0;
+    }
+
+    .navi.sidenav-fixed {
+      left: 0;
+      transform: translateX(0);
+      position: fixed;
+    }
+
+    .navi.sidenav-fixed.right-aligned {
+      right: 0;
+      left: auto;
+    }
+
+    @media only screen and (min-width: 993px) {
+      body.has-fixed-navi {
+        padding-left:300px;
+      }
+      .container {
+        width: 80%;
+      }
+    }
+
+    .card .card-action a {
+      text-transform: none !important;
+    }
+
+    .cover {
+      height: 50vh;
+      max-height: 500px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center; /* Horizontally center the image */
+      align-items: center; /* Vertically center the image */
+      background-position: center center;
+      background-size: cover;
+    }
+  </style>
+</head>
