@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-<%- include('../head', page); %>
+<%- include('../../head', page); %>
 <body class="has-fixed-navi">
-  <%- include('../header', {
+  <%- include('../../header', {
     page,
     user,
     moduleName,
@@ -11,16 +11,19 @@
   }); %>
   
   <div style="min-height: 100vh;">
-    <%- include('../breadcrumb', {
+    <%- include('../../breadcrumb', {
       links: [
         { name: `Home`, url: `/` },
         { name: `VRP: Owner`, url: `/modules/owner` },
+        { name: `Managers`, url: `/modules/owner/sub/managers` },
       ]
     }); %>
     <br />
-    <%- include('../navigation', { navigation }); %>
+    <div class="container">
+      hello managers
+    </div>
   </div>
-  <%- include('../footer'); %>
+  <%- include('../../footer'); %>
   <%- // include('session'); %>
 
   <!-- include htmx -->

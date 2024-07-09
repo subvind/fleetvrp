@@ -38,12 +38,26 @@
         <a class="collapsible-header" tabindex="0">Modules<i class="material-icons chevron">chevron_left</i></a>
         <div class="collapsible-body">
           <ul>
-            <li><a href="/modules/owner" class="waves-effect">VRP: Owner<i class="material-icons">domain</i></a></li>
-            <li><a href="/modules/manager" class="waves-effect">VRP: Manager<i class="material-icons">assignment_ind</i></a></li>
-            <li><a href="/modules/solver" class="waves-effect">VRP: Solver<i class="material-icons">extension</i></a></li>
-            <li><a href="/modules/planner" class="waves-effect">VRP: Planner<i class="material-icons">event</i></a></li>
-            <li><a href="/modules/pickup-and-delivery" class="waves-effect">VRP: Pickup & Delivery<i class="material-icons">directions_car</i></a></li>
-            <li><a href="/modules/order" class="waves-effect">VRP: Order<i class="material-icons">flag</i></a></li>
+            <li><a href="/modules/owner" class="waves-effect <%= moduleSlug === 'owner' ? 'active' : '' %>">VRP: Owner<i class="material-icons">domain</i></a></li>
+            <li><a href="/modules/manager" class="waves-effect <%= moduleSlug === 'manager' ? 'active' : '' %>">VRP: Manager<i class="material-icons">assignment_ind</i></a></li>
+            <li><a href="/modules/solver" class="waves-effect <%= moduleSlug === 'solver' ? 'active' : '' %>">VRP: Solver<i class="material-icons">extension</i></a></li>
+            <li><a href="/modules/planner" class="waves-effect <%= moduleSlug === 'planner' ? 'active' : '' %>">VRP: Planner<i class="material-icons">event</i></a></li>
+            <li><a href="/modules/pickup-and-delivery" class="waves-effect <%= moduleSlug === 'pickup-and-delivery' ? 'active' : '' %>">VRP: Pickup & Delivery<i class="material-icons">directions_car</i></a></li>
+            <li><a href="/modules/order" class="waves-effect <%= moduleSlug === 'order' ? 'active' : '' %>">VRP: Order<i class="material-icons">flag</i></a></li>
+          </ul>
+        </div>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <ul class="collapsible collapsible-accordion">
+      <li class="bold waves-effect active">
+        <a class="collapsible-header" tabindex="0"><%= moduleName %><i class="material-icons chevron">chevron_left</i></a>
+        <div class="collapsible-body">
+          <ul>
+            <% navigation.forEach(nav => { %>
+              <li><a href="<%= nav.url %>" class="waves-effect <%= nav.slug === subModuleSlug ? 'active' : '' %>"><%= nav.name %><i class="material-icons"><%= nav.icon %></i></a></li>
+            <% }) %>
           </ul>
         </div>
       </li>

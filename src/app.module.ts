@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { OwnerModule } from './modules/owner/owner.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { CacheModule } from '@nestjs/cache-manager';
       max: 100, // maximum number of items in cache
     }),
     AuthModule,
+    OwnerModule,
   ],
   controllers: [AppController],
   providers: [AppService, AuthService],

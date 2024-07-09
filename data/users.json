@@ -1,20 +1,14 @@
 [
   {
-    "id": "1720307326258",
-    "email": "travis.burandt@gmail.com",
-    "password": "$2b$10$L0KP7AVsiHngaCbLAqTxZeKwtim7tjO0sfyqlb.KmrwGPlc3.r7oG",
-    "stripeCustomerId": "cus_QQUxRD5F7Pbga0"
-  },
-  {
     "id": "1720307357874",
     "email": "test@test.com",
     "password": "$2b$10$HPJoZOt7KZmv.x64BS49ZeXvJxgoUnDRUKr1xrlarjfr5jLKrH40q",
     "stripeCustomerId": "cus_QQX2hDlwVVtJts"
   },
   {
-    "id": "1720449699958",
+    "id": "1720547704111",
     "email": "travis.burandt@gmail.com",
-    "password": "$2b$10$QGGqMxB5wm9S9TUPq77KcOU/1JozJhS5niw2Y/ymudBl.5ynNnYcu",
+    "password": "$2b$10$bIc3L54F8bX9AqPl22rXSOocTVHWT9FMfv21D8.ZTN8K3y1Zi4ZMm",
     "stripeCustomerId": "cus_QRB7EkPbBTFhLh"
   }
 ]
