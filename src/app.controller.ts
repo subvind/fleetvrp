@@ -21,8 +21,8 @@ export class AppController {
     return { user, message: 'Vehicle Routing Problem' };
   }
 
-  @Get('vehicle-routing-problem')
-  @Render('vehicle-routing-problem')
+  @Get('welcome')
+  @Render('welcome')
   async dashboard(@Req() req: Request) {
     let user: User | undefined;
     const userId = req.cookies['userId'];
