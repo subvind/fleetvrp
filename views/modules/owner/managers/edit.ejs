@@ -1,20 +1,19 @@
-<h3>Create New Manager</h3>
-<form hx-post="/htmx/modules/owner/managers" hx-target="#managers-list" hx-swap="outerHTML">
+<h3>Edit Manager</h3>
+<form hx-put="/htmx/modules/owner/managers/<%= manager.id %>" hx-target="#managers-list" hx-swap="outerHTML">
   <div class="input-field">
-    <input type="text" id="name" name="name" required>
+    <input type="text" id="name" name="name" value="<%= manager.name %>" required>
     <label for="name">Name</label>
   </div>
   <div class="input-field">
     <select id="userId" name="userId" required>
-      <option value="" selected>Choose a user</option>
       <% users.forEach(user => { %>
-        <option value="<%= user.id %>"><%= user.email %></option>
+        <option value="<%= user.id %>" <%= user.id === manager.user.id ? 'selected' : '' %>><%= user.email %></option>
       <% }); %>
     </select>
     <label for="userId">User</label>
   </div>
   <button class="btn waves-effect waves-light blue darken-2" type="submit">
-    Create
+    Update
     <i class="material-icons right">send</i>
   </button>
 </form>

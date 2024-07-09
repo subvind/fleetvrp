@@ -1,0 +1,11 @@
+<h3>Manager Details</h3>
+<div>
+  <p><strong>Name:</strong> <%= manager.name %></p>
+  <p><strong>Email:</strong> <%= manager.user.email %></p>
+  <button class="btn waves-effect waves-light blue darken-2"
+          hx-get="/htmx/modules/owner/managers/edit/<%= manager.id %>"
+          hx-target="#managers-content">
+    Edit
+    <i class="material-icons right">edit</i>
+  </button>
+</div>

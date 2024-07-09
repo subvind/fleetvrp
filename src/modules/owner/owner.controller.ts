@@ -1,65 +1,79 @@
-import { Controller, Get, Render, Req, Query, Post, Body, Param } from '@nestjs/common';
-
+import { Controller, Get, Render, Query, Post, Body, Param, Put, Delete } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { ManagerService } from './manager.service';
+import { UserService } from '../../user.service';
+import { Manager } from './manager.entity';
 
 @ApiTags('owner')
 @Controller('htmx/modules/owner')
 export class OwnerController {
-  constructor() {}
-
-  @Get('managers/view')
-  @Render('modules/owner/managers/view')
-  managersView() {
-    return { 
-      layout: false,
-      // view: data
-    };
-  }
+  constructor(
+    private managerService: ManagerService,
+    private userService: UserService
+  ) {}
 
   @Get('managers/list')
   @Render('modules/owner/managers/list')
   async managersList(
-    @Query('config') config: string = 'OrderByLatest',
+    @Query('search') search?: string,
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 20,
-    @Query('search') search?: string,
   ) {
+    const managers = await this.managerService.findAll(search, page, limit);
     return {
       layout: false,
-      // list: data
+      managers,
     };
   }
 
   @Get('managers/create')
   @Render('modules/owner/managers/create')
-  managersCreate() {
+  async managersCreate() {
+    const users = await this.userService.findAll();
     return { 
       layout: false,
+      users,
     };
   }
 
   @Post('managers')
-  @Render('modules/owner/managers/created')
-  async managersCreated(
-    @Body() productData: any
-  ) {
-    return {
-      layout: false,
-      // created: data
-    }
+  async managersCreated(@Body() managerData: { name: string, userId: string }) {
+    console.log('create manager', managerData)
+    await this.managerService.create(managerData);
+    return this.managersList();
   }
 
-  @Get('managers/table')
-  @Render('modules/owner/managers/table')
-  async managesTable(
-    @Query('config') config: string = 'OrderByLatest',
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 20,
-    @Query('search') search?: string,
-  ) {
+  @Get('managers/view/:id')
+  @Render('modules/owner/managers/view')
+  async managersView(@Param('id') id: string) {
+    const manager = await this.managerService.findOne(id);
     return {
       layout: false,
-      // table: data
-    }
+      manager,
+    };
+  }
+
+  @Get('managers/edit/:id')
+  @Render('modules/owner/managers/edit')
+  async managersEdit(@Param('id') id: string) {
+    const manager = await this.managerService.findOne(id);
+    const users = await this.userService.findAll();
+    return {
+      layout: false,
+      manager,
+      users,
+    };
+  }
+
+  @Put('managers/:id')
+  async managersUpdated(@Param('id') id: string, @Body() managerData: { name?: string, userId?: string }) {
+    await this.managerService.update(id, managerData);
+    return this.managersList();
+  }
+
+  @Delete('managers/:id')
+  async managersDeleted(@Param('id') id: string) {
+    await this.managerService.remove(id);
+    return this.managersList();
   }
 }

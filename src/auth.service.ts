@@ -1,4 +1,6 @@
 import { Injectable, ConflictException, Inject } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { User } from './user.model';
 import * as bcrypt from 'bcrypt';
 import Stripe from 'stripe';
@@ -15,6 +17,8 @@ export class AuthService {
   private readonly usersFilePath: string;
 
   constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     private configService: ConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache
   ) {
@@ -23,41 +27,15 @@ export class AuthService {
       throw new Error('STRIPE_SECRET_KEY is not defined in the environment variables');
     }
     this.stripe = new Stripe(stripeSecretKey, { apiVersion: '2024-06-20' });
-    
-    // Set up file storage for users
-    let mount = this.configService.get<string>('VOLUME')
-    if (mount) {
-      this.usersFilePath = path.join(mount, 'users.json');
-    } else {
-      this.usersFilePath = path.join(__dirname, '../data', 'users.json');
-    }
-    this.loadUsers();
   }
+  
 
-  async loadUsers() {
-    try {
-      if (fs.existsSync(this.usersFilePath)) {
-        const data = fs.readFileSync(this.usersFilePath, 'utf8');
-        this.users = JSON.parse(data) as User[];
-        await this.cacheManager.set('users', this.users);
-        console.log('Users loaded from file');
-      } else {
-        this.users = [];
-      }
-    } catch (error) {
-      console.error('Error loading users:', error);
+  async validateUser(email: string, password: string): Promise<User | null> {
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (user && await bcrypt.compare(password, user.password)) {
+      return user;
     }
-  }
-
-  async saveUsers() {
-    try {
-      const data = JSON.stringify(this.users, null, 2);
-      await this.cacheManager.set('users', this.users);
-      fs.writeFileSync(this.usersFilePath, data);
-      console.log('Users saved to file');
-    } catch (error) {
-      console.error('Error saving users:', error);
-    }
+    return null;
   }
 
   async register(email: string, password: string): Promise<User> {
@@ -93,35 +71,24 @@ export class AuthService {
       throw new Error('Failed to process Stripe customer');
     }
 
-    const newUser: User = {
-      id: Date.now().toString(),
+    const user = this.userRepository.create({
       email,
       password: hashedPassword,
       stripeCustomerId,
-    };
+    // manager is not set initially, it will be undefined
+    });
 
-    this.users.push(newUser);
-    await this.saveUsers();
+    let newUser = await this.userRepository.save(user);
+
     console.log('User registered:', newUser.email);
     return newUser;
   }
 
   async login(email: string, password: string): Promise<User | null> {
-    let users = await this.cacheManager.get<User[]>('users') || [];
-
-    const user = users.find(u => u.email === email);
-    if (user && await bcrypt.compare(password, user.password)) {
-      console.log('User logged in:', user.email);
-      return user;
-    }
-    return null;
+    return this.validateUser(email, password);
   }
 
   async getUser(id: string): Promise<User | undefined> {
-    let users = await this.cacheManager.get<User[]>('users') || [];
-
-    console.log('Getting user with id:', id);
-    const user = users.find(u => u.id === id);
-    return user;
+    return this.userRepository.findOne({ where: { id } });
   }
 }

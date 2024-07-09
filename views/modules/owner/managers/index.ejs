@@ -20,13 +20,47 @@
     }); %>
     <br />
     <div class="container">
-      hello managers
+      <h2>Managers</h2>
+      
+      <!-- HTMX-powered search input -->
+      <div class="input-field">
+        <input type="text" id="search" name="search" 
+               hx-get="/htmx/modules/owner/managers/list"
+               hx-trigger="keyup changed delay:500ms"
+               hx-target="#managers-list"
+               placeholder="Search managers...">
+        <label for="search">Search</label>
+      </div>
+
+      <!-- Create manager button -->
+      <button class="btn waves-effect waves-light blue darken-2"
+              hx-get="/htmx/modules/owner/managers/create"
+              hx-target="#managers-content">
+        Create Manager
+        <i class="material-icons right">add</i>
+      </button>
+
+      <!-- Managers list -->
+      <div id="managers-list" hx-get="/htmx/modules/owner/managers/list" hx-trigger="load">
+        <!-- The list will be loaded here -->
+      </div>
+
+      <!-- Manager content (for create/edit/view) -->
+      <div id="managers-content">
+        <!-- The create/edit/view forms will be loaded here -->
+      </div>
     </div>
   </div>
   <%- include('../../footer'); %>
-  <%- // include('session'); %>
 
   <!-- include htmx -->
   <script src="https://unpkg.com/htmx.org@1.9.11"></script>
+  
+  <script>
+    // Initialize Materialize components
+    document.addEventListener('DOMContentLoaded', function() {
+      M.updateTextFields();
+    });
+  </script>
 </body>
 </html>
