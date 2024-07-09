@@ -14,11 +14,7 @@ export class UserService {
   ) {}
 
   async findAll(): Promise<User[]> {
-    let users = await this.cacheManager.get<User[]>('users');
-    if (!users) {
-      users = await this.userRepository.find();
-      await this.cacheManager.set('users', users);
-    }
+    let users = await this.userRepository.find();
     return users;
   }
 

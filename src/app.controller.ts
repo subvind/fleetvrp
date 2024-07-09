@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Render, Body, Res, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Render, Body, Res, Req, UseGuards, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response, Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
@@ -87,7 +87,20 @@ export class AppController {
   @Get('modules/owner/sub/managers')
   @UseGuards(AuthGuard('cookie'))
   @Render('modules/owner/managers/index')
-  async getAppOwnerManagersIndex(@Req() req: Request) {
+  async getAppOwnerManagersIndex(
+    @Req() req: Request,
+    @Query('config') config: string = 'LatestProducts',
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20,
+    @Query('search') search?: string,
+  ) {
+    let params: any = {
+      page: page,
+      limit: limit,
+      search: search,
+      config: config,
+    };
+
     return {
       user: req.user as User,
       page: {
@@ -96,7 +109,8 @@ export class AppController {
       moduleName: 'VRP: Owner',
       moduleSlug: 'owner',
       subModuleSlug: 'managers',
-      navigation: navigation.owner
+      navigation: navigation.owner,
+      params
     };
   }
 

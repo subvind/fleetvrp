@@ -23,26 +23,56 @@
       <h2>Managers</h2>
       
       <!-- HTMX-powered search input -->
-      <div class="input-field">
-        <input type="text" id="search" name="search" 
-               hx-get="/htmx/modules/owner/managers/list"
-               hx-trigger="keyup changed delay:500ms"
-               hx-target="#managers-list"
-               placeholder="Search managers...">
-        <label for="search">Search</label>
-      </div>
+      <nav class="grey">
+        <div class="nav-wrapper">
+          <form
+            id="managers-search-form"
+            hx-get="/htmx/modules/owner/managers/list"
+            hx-trigger="submit"
+            hx-target="#managers-list"
+            hx-trigger="submit"
+          >
+            <div class="input-field">
+              <input class="search" id="search" type="search" value="<%- params.search %>" placeholder="Search">
+              <label class="label-icon" for="search"><i class="material-icons">search</i></label>
+              <i class="material-icons">close</i>
+            </div>
+          </form>
+        </div>
+      </nav>
+      <script>
+        const form = document.getElementById('managers-search-form');
+        const input = document.getElementById('search');
+        input.addEventListener("keyup", function(event) {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            const url = `/htmx/modules/owner/managers/list?config=${new URLSearchParams(window.location.search).get('config')}&search=${encodeURIComponent(input.value)}&page=1&limit=<%- params.limit %>`;
+            form.setAttribute('hx-get', url);
+            htmx.process(form);
+            htmx.trigger(form, 'submit', null);
 
-      <!-- Create manager button -->
-      <button class="btn waves-effect waves-light blue darken-2"
-              hx-get="/htmx/modules/owner/managers/create"
-              hx-target="#managers-content">
-        Create Manager
-        <i class="material-icons right">add</i>
-      </button>
+            var queryParams = new URLSearchParams(window.location.search);
+            queryParams.set('search', input.value);
+            history.pushState(null, null, '?' + queryParams.toString());
+          }
+        });
+      </script>
 
       <!-- Managers list -->
       <div id="managers-list" hx-get="/htmx/modules/owner/managers/list" hx-trigger="load">
         <!-- The list will be loaded here -->
+      </div>
+
+      <div style="overflow: hidden;">
+        <!-- Create manager button -->
+        <button class="btn waves-effect waves-light blue darken-2 right"
+                hx-get="/htmx/modules/owner/managers/create"
+                hx-target="#managers-content">
+          Create Manager
+          <i class="material-icons right">add</i>
+        </button>
+        <br />
+        <br />
       </div>
 
       <!-- Manager content (for create/edit/view) -->
