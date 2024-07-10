@@ -30,7 +30,16 @@
           <p>One particularly effective approach to solving the VRP is the use of genetic evolutionary algorithms. These algorithms draw inspiration from the principles of natural selection and evolution to iteratively improve solutions. In the context of the VRP, a "population" of potential route configurations is created and then subjected to processes mimicking genetic crossover and mutation. The fittest solutions – those that best meet the optimization criteria – are selected to "reproduce," creating new generations of potentially better solutions. This process continues over many iterations, often resulting in high-quality solutions that may not be easily found through traditional optimization methods. Genetic algorithms are particularly well-suited to the VRP due to their ability to handle complex constraints and objective functions, as well as their capacity to explore a vast solution space efficiently. As computing power continues to increase, these evolutionary approaches are likely to play an even more significant role in solving real-world vehicle routing challenges.</p>
         </div>
         <div class="card-action">
-          <a href="https://fleetvrp.com/welcome" class="waves-effect waves-light btn blue darken-2 fluid"><i class="material-icons left">share</i> https://fleetvrp.com/welcome</a>
+          <a href="/welcome" class="waves-effect waves-light btn blue darken-2 fluid share">welcome</a>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              var brandLogo = document.querySelector('.share');
+
+              let icon = '<i class="material-icons left">share</i> '
+              brandLogo.href = '//' + window.location.host + '/welcome';
+              brandLogo.innerHTML = icon + ' ' + window.location.protocol + '//' + window.location.host + '/welcome';
+            })
+          </script>
         </div>
       </div>
     </div>
