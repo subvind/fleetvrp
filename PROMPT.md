@@ -2,7 +2,7 @@ Please follow the instructions within ./TODO.md! Thank you :)
 ### ./src/modules/owner/manager.entity.ts
 ```ts
 import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
-import { User } from '../../user.model'; // Adjust the import path as needed
+import { User } from '../../user.model';
 
 @Entity()
 export class Manager {
@@ -128,6 +128,7 @@ export class OwnerController {
 
   @Post('managers')
   async managersCreated(@Body() managerData: { name: string, userId: string }) {
+    console.log('create manager', managerData)
     await this.managerService.create(managerData);
     return this.managersList();
   }
@@ -188,7 +189,7 @@ export class OwnerModule {}
 
 ### ./src/app.controller.ts
 ```ts
-import { Controller, Get, Post, Render, Body, Res, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Render, Body, Res, Req, UseGuards, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response, Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
@@ -211,8 +212,8 @@ export class AppController {
     return { user, message: 'Vehicle Routing Problem' };
   }
 
-  @Get('vehicle-routing-problem')
-  @Render('vehicle-routing-problem')
+  @Get('welcome')
+  @Render('welcome')
   async dashboard(@Req() req: Request) {
     let user: User | undefined;
     const userId = req.cookies['userId'];
@@ -277,7 +278,20 @@ export class AppController {
   @Get('modules/owner/sub/managers')
   @UseGuards(AuthGuard('cookie'))
   @Render('modules/owner/managers/index')
-  async getAppOwnerManagersIndex(@Req() req: Request) {
+  async getAppOwnerManagersIndex(
+    @Req() req: Request,
+    @Query('config') config: string = 'LatestProducts',
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20,
+    @Query('search') search?: string,
+  ) {
+    let params: any = {
+      page: page,
+      limit: limit,
+      search: search,
+      config: config,
+    };
+
     return {
       user: req.user as User,
       page: {
@@ -286,7 +300,8 @@ export class AppController {
       moduleName: 'VRP: Owner',
       moduleSlug: 'owner',
       subModuleSlug: 'managers',
-      navigation: navigation.owner
+      navigation: navigation.owner,
+      params
     };
   }
 
@@ -320,6 +335,7 @@ import { AuthModule } from './auth/auth.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { OwnerModule } from './modules/owner/owner.module';
 import { Manager } from './modules/owner/manager.entity';
+import { User } from './user.model';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -343,7 +359,7 @@ import * as fs from 'fs';
         return {
           type: 'sqlite',
           database: dbPath,
-          entities: [Manager],
+          entities: [Manager, User],
           synchronize: true, // Set to false in production
         };
       },
@@ -356,6 +372,7 @@ import * as fs from 'fs';
     }),
     AuthModule,
     OwnerModule,
+    TypeOrmModule.forFeature([User]),
   ],
   controllers: [AppController],
   providers: [AppService, AuthService],
@@ -440,11 +457,7 @@ export class UserService {
   ) {}
 
   async findAll(): Promise<User[]> {
-    let users = await this.cacheManager.get<User[]>('users');
-    if (!users) {
-      users = await this.userRepository.find();
-      await this.cacheManager.set('users', users);
-    }
+    let users = await this.userRepository.find();
     return users;
   }
 
@@ -470,24 +483,26 @@ export class UserService {
   </div>
   <div class="input-field">
     <select id="userId" name="userId" required>
-      <option value="" disabled selected>Choose a user</option>
+      <option value="" selected>Choose a user</option>
       <% users.forEach(user => { %>
         <option value="<%= user.id %>"><%= user.email %></option>
       <% }); %>
     </select>
     <label for="userId">User</label>
   </div>
-  <button class="btn waves-effect waves-light" type="submit">
+  <button class="btn waves-effect waves-light blue darken-2" type="submit">
     Create
     <i class="material-icons right">send</i>
   </button>
 </form>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  (function () {
+    M.updateTextFields();
+
     var elems = document.querySelectorAll('select');
-    var instances = M.FormSelect.init(elems);
-  });
+    var instances = M.FormSelect.init(elems, {});
+  })();
 </script>
 ```
 
@@ -507,17 +522,19 @@ export class UserService {
     </select>
     <label for="userId">User</label>
   </div>
-  <button class="btn waves-effect waves-light" type="submit">
+  <button class="btn waves-effect waves-light blue darken-2" type="submit">
     Update
     <i class="material-icons right">send</i>
   </button>
 </form>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  (function () {
+    M.updateTextFields();
+
     var elems = document.querySelectorAll('select');
-    var instances = M.FormSelect.init(elems);
-  });
+    var instances = M.FormSelect.init(elems, {});
+  })();
 </script>
 ```
 
@@ -548,26 +565,56 @@ export class UserService {
       <h2>Managers</h2>
       
       <!-- HTMX-powered search input -->
-      <div class="input-field">
-        <input type="text" id="search" name="search" 
-               hx-get="/htmx/modules/owner/managers/list"
-               hx-trigger="keyup changed delay:500ms"
-               hx-target="#managers-list"
-               placeholder="Search managers...">
-        <label for="search">Search</label>
-      </div>
+      <nav class="grey">
+        <div class="nav-wrapper">
+          <form
+            id="managers-search-form"
+            hx-get="/htmx/modules/owner/managers/list"
+            hx-trigger="submit"
+            hx-target="#managers-list"
+            hx-trigger="submit"
+          >
+            <div class="input-field">
+              <input class="search" id="search" type="search" value="<%- params.search %>" placeholder="Search">
+              <label class="label-icon" for="search"><i class="material-icons">search</i></label>
+              <i class="material-icons">close</i>
+            </div>
+          </form>
+        </div>
+      </nav>
+      <script>
+        const form = document.getElementById('managers-search-form');
+        const input = document.getElementById('search');
+        input.addEventListener("keyup", function(event) {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            const url = `/htmx/modules/owner/managers/list?config=${new URLSearchParams(window.location.search).get('config')}&search=${encodeURIComponent(input.value)}&page=1&limit=<%- params.limit %>`;
+            form.setAttribute('hx-get', url);
+            htmx.process(form);
+            htmx.trigger(form, 'submit', null);
 
-      <!-- Create manager button -->
-      <button class="btn waves-effect waves-light"
-              hx-get="/htmx/modules/owner/managers/create"
-              hx-target="#managers-content">
-        Create Manager
-        <i class="material-icons right">add</i>
-      </button>
+            var queryParams = new URLSearchParams(window.location.search);
+            queryParams.set('search', input.value);
+            history.pushState(null, null, '?' + queryParams.toString());
+          }
+        });
+      </script>
 
       <!-- Managers list -->
       <div id="managers-list" hx-get="/htmx/modules/owner/managers/list" hx-trigger="load">
         <!-- The list will be loaded here -->
+      </div>
+
+      <div style="overflow: hidden;">
+        <!-- Create manager button -->
+        <button class="btn waves-effect waves-light blue darken-2 right"
+                hx-get="/htmx/modules/owner/managers/create"
+                hx-target="#managers-content">
+          Create Manager
+          <i class="material-icons right">add</i>
+        </button>
+        <br />
+        <br />
       </div>
 
       <!-- Manager content (for create/edit/view) -->
@@ -593,41 +640,44 @@ export class UserService {
 
 ### ./views/modules/owner/managers/list.ejs
 ```ejs
-<table class="striped">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Email</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% managers.forEach(manager => { %>
+<div class="card">
+  <table class="striped">
+    <thead style="background: #ccc;">
       <tr>
-        <td><%= manager.name %></td>
-        <td><%= manager.email %></td>
-        <td>
-          <button class="btn-small waves-effect waves-light"
-                  hx-get="/htmx/modules/owner/managers/view/<%= manager.id %>"
-                  hx-target="#managers-content">
-            View
-          </button>
-          <button class="btn-small waves-effect waves-light"
-                  hx-get="/htmx/modules/owner/managers/edit/<%= manager.id %>"
-                  hx-target="#managers-content">
-            Edit
-          </button>
-          <button class="btn-small waves-effect waves-light red"
-                  hx-delete="/htmx/modules/owner/managers/<%= manager.id %>"
-                  hx-confirm="Are you sure you want to delete this manager?"
-                  hx-target="#managers-list">
-            Delete
-          </button>
-        </td>
+        <th>Name</th>
+        <th>Email</th>
+        <th class="right">Actions</th>
       </tr>
-    <% }); %>
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      <% managers.forEach(manager => { %>
+        <tr>
+          <td><%= manager.name %></td>
+          <td><%= manager.user.email %></td>
+          <td class="right">
+            <button class="btn-small waves-effect waves-light blue darken-2"
+                    hx-get="/htmx/modules/owner/managers/view/<%= manager.id %>"
+                    hx-target="#managers-content">
+              View
+            </button>
+            <button class="btn-small waves-effect waves-light blue darken-2"
+                    hx-get="/htmx/modules/owner/managers/edit/<%= manager.id %>"
+                    hx-target="#managers-content">
+              Edit
+            </button>
+            <button class="btn-small waves-effect waves-light red"
+                    hx-delete="/htmx/modules/owner/managers/<%= manager.id %>"
+                    hx-confirm="Are you sure you want to delete this manager?"
+                    hx-target="#managers-list">
+              Delete
+            </button>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+
+</div>
 ```
 
 ### ./views/modules/owner/managers/view.ejs
@@ -635,8 +685,8 @@ export class UserService {
 <h3>Manager Details</h3>
 <div>
   <p><strong>Name:</strong> <%= manager.name %></p>
-  <p><strong>Email:</strong> <%= manager.email %></p>
-  <button class="btn waves-effect waves-light"
+  <p><strong>Email:</strong> <%= manager.user.email %></p>
+  <button class="btn waves-effect waves-light blue darken-2"
           hx-get="/htmx/modules/owner/managers/edit/<%= manager.id %>"
           hx-target="#managers-content">
     Edit
@@ -680,17 +730,7 @@ export class UserService {
 
 ### ./CURRENT_ERROR.md
 ```md
-[Nest] 91946  - 07/09/2024, 2:25:16 PM   ERROR [TypeOrmModule] Unable to connect to the database. Retrying (1)...
-TypeORMError: Entity metadata for Manager#user was not found. Check if you specified a correct entity object and if it's connected in the connection options.
-    at <anonymous> (/Users/subvind/Projects/fleetvrp/node_modules/typeorm/metadata-builder/src/metadata-builder/EntityMetadataBuilder.ts:1121:23)
-    at Array.forEach (<anonymous>)
-    at EntityMetadataBuilder.computeInverseProperties (/Users/subvind/Projects/fleetvrp/node_modules/typeorm/metadata-builder/src/metadata-builder/EntityMetadataBuilder.ts:1111:34)
-    at <anonymous> (/Users/subvind/Projects/fleetvrp/node_modules/typeorm/metadata-builder/src/metadata-builder/EntityMetadataBuilder.ts:158:18)
-    at Array.forEach (<anonymous>)
-    at EntityMetadataBuilder.build (/Users/subvind/Projects/fleetvrp/node_modules/typeorm/metadata-builder/src/metadata-builder/EntityMetadataBuilder.ts:157:25)
-    at ConnectionMetadataBuilder.buildEntityMetadatas (/Users/subvind/Projects/fleetvrp/node_modules/typeorm/connection/src/connection/ConnectionMetadataBuilder.ts:106:11)
-    at DataSource.buildMetadatas (/Users/subvind/Projects/fleetvrp/node_modules/typeorm/data-source/src/data-source/DataSource.ts:710:13)
-    at DataSource.initialize (/Users/subvind/Projects/fleetvrp/node_modules/typeorm/data-source/src/data-source/DataSource.ts:263:13)
+managers does not have pagination 
 ```
 
 ### ./TODO.md

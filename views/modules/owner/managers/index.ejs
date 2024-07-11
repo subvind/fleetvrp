@@ -20,6 +20,16 @@
     }); %>
     <br />
     <div class="container">
+
+      <!-- Create manager button -->
+      <button class="btn waves-effect waves-light blue darken-2 right"
+              hx-get="/htmx/modules/owner/managers/create"
+              hx-target="#managers-content"
+              style="margin-top: 1em;">
+        Create Manager
+        <i class="material-icons right">add</i>
+      </button>
+
       <h2>Managers</h2>
       
       <!-- HTMX-powered search input -->
@@ -58,22 +68,15 @@
         });
       </script>
 
+      <br />
+
       <!-- Managers list -->
       <div id="managers-list" hx-get="/htmx/modules/owner/managers/list" hx-trigger="load">
         <!-- The list will be loaded here -->
       </div>
 
-      <div style="overflow: hidden;">
-        <!-- Create manager button -->
-        <button class="btn waves-effect waves-light blue darken-2 right"
-                hx-get="/htmx/modules/owner/managers/create"
-                hx-target="#managers-content">
-          Create Manager
-          <i class="material-icons right">add</i>
-        </button>
-        <br />
-        <br />
-      </div>
+      <br />
+      <br />
 
       <!-- Manager content (for create/edit/view) -->
       <div id="managers-content">

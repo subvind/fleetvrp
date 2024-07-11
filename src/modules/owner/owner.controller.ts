@@ -17,12 +17,18 @@ export class OwnerController {
   async managersList(
     @Query('search') search?: string,
     @Query('page') page: number = 1,
-    @Query('limit') limit: number = 20,
+    @Query('limit') limit: number = 1,
   ) {
-    const managers = await this.managerService.findAll(search, page, limit);
+    const { managers, total } = await this.managerService.findAll(search, page, limit);
+    const totalPages = Math.ceil(total / limit);
     return {
       layout: false,
       managers,
+      currentPage: page,
+      totalPages,
+      limit,
+      search,
+      total
     };
   }
 

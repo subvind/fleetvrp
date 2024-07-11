@@ -11,7 +11,7 @@ export class ManagerService {
     private managerRepository: Repository<Manager>,
   ) {}
 
-  async findAll(search?: string, page: number = 1, limit: number = 20): Promise<Manager[]> {
+  async findAll(search?: string, page: number = 1, limit: number = 20): Promise<{ managers: Manager[], total: number }> {
     const query = this.managerRepository.createQueryBuilder('manager')
       .leftJoinAndSelect('manager.user', 'user');
 
@@ -19,9 +19,13 @@ export class ManagerService {
       query.where('manager.name LIKE :search OR user.email LIKE :search', { search: `%${search}%` });
     }
 
+    const total = await query.getCount();
+
     query.skip((page - 1) * limit).take(limit);
 
-    return query.getMany();
+    const managers = await query.getMany();
+
+    return { managers, total };
   }
 
   async create(managerData: { name: string, userId: string }): Promise<Manager> {
