@@ -1,5 +1,9 @@
 <h3>Create New Manager</h3>
-<form hx-post="/htmx/modules/owner/managers" hx-target="#managers-list" hx-swap="outerHTML">
+<form 
+  hx-post="/htmx/modules/owner/managers" 
+  hx-target="#managers-list" 
+  hx-swap="innerHTML"
+  hx-trigger="submit">
   <div class="input-field">
     <input type="text" id="name" name="name" required>
     <label for="name">Name</label>
@@ -20,10 +24,6 @@
 </form>
 
 <script>
-  (function () {
-    M.updateTextFields();
-
-    var elems = document.querySelectorAll('select');
-    var instances = M.FormSelect.init(elems, {});
-  })();
+  // Initialize MDUI components
+  mdui.mutation();
 </script>

@@ -1,4 +1,4 @@
-import { Controller, Get, Render, Query, Post, Body, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Render, Query, Post, Body, Param, Put, Delete, HttpCode } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { ManagerService } from './manager.service';
 import { UserService } from '../../user.service';
@@ -17,7 +17,7 @@ export class OwnerController {
   async managersList(
     @Query('search') search?: string,
     @Query('page') page: number = 1,
-    @Query('limit') limit: number = 1,
+    @Query('limit') limit: number = 20,
   ) {
     const { managers, total } = await this.managerService.findAll(search, page, limit);
     const totalPages = Math.ceil(total / limit);
@@ -41,12 +41,29 @@ export class OwnerController {
       users,
     };
   }
-
+  
   @Post('managers')
-  async managersCreated(@Body() managerData: { name: string, userId: string }) {
-    console.log('create manager', managerData)
+  @HttpCode(200)
+  @Render('modules/owner/managers/list')
+  async managersCreated(
+    @Body() managerData: { name: string, userId: string },
+    @Query('search') search?: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20
+  ) {
+    console.log('create manager', managerData);
     await this.managerService.create(managerData);
-    return this.managersList();
+    const { managers, total } = await this.managerService.findAll(search, page, limit);
+    const totalPages = Math.ceil(total / limit);
+    return {
+      layout: false,
+      managers,
+      currentPage: page,
+      totalPages,
+      limit,
+      search,
+      total
+    };
   }
 
   @Get('managers/view/:id')
@@ -72,14 +89,48 @@ export class OwnerController {
   }
 
   @Put('managers/:id')
-  async managersUpdated(@Param('id') id: string, @Body() managerData: { name?: string, userId?: string }) {
+  @Render('modules/owner/managers/list')
+  async managersUpdated(
+    @Param('id') id: string,
+    @Body() managerData: { name?: string, userId?: string },
+    @Query('search') search?: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20
+  ) {
     await this.managerService.update(id, managerData);
-    return this.managersList();
+    const { managers, total } = await this.managerService.findAll(search, page, limit);
+    const totalPages = Math.ceil(total / limit);
+    return {
+      layout: false,
+      managers,
+      currentPage: page,
+      totalPages,
+      limit,
+      search,
+      total
+    };
   }
 
   @Delete('managers/:id')
-  async managersDeleted(@Param('id') id: string) {
+  @HttpCode(200)
+  @Render('modules/owner/managers/list')
+  async managersDeleted(
+    @Param('id') id: string,
+    @Query('search') search?: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20
+  ) {
     await this.managerService.remove(id);
-    return this.managersList();
+    const { managers, total } = await this.managerService.findAll(search, page, limit);
+    const totalPages = Math.ceil(total / limit);
+    return {
+      layout: false,
+      managers,
+      currentPage: page,
+      totalPages,
+      limit,
+      search,
+      total
+    };
   }
 }

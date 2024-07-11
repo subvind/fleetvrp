@@ -26,7 +26,8 @@
             <button class="btn-small waves-effect waves-light red"
                     hx-delete="/htmx/modules/owner/managers/<%= manager.id %>"
                     hx-confirm="Are you sure you want to delete this manager?"
-                    hx-target="#managers-list">
+                    hx-target="#managers-list"
+                    hx-swap="innerHTML">
               Delete
             </button>
           </td>

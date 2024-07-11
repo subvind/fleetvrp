@@ -1,1 +1,1 @@
-managers does not have pagination 
+durring edit manager when i click delete it just swaps out the table with json

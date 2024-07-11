@@ -1,8 +1,11 @@
 <h3>Edit Manager</h3>
-<form hx-put="/htmx/modules/owner/managers/<%= manager.id %>" hx-target="#managers-list" hx-swap="outerHTML">
+<form hx-put="/htmx/modules/owner/managers/<%= manager.id %>" 
+      hx-target="#managers-list" 
+      hx-swap="innerHTML"
+      hx-trigger="submit">
   <div class="input-field">
     <input type="text" id="name" name="name" value="<%= manager.name %>" required>
-    <label for="name">Name</label>
+    <label for="name" class="active">Name</label>
   </div>
   <div class="input-field">
     <select id="userId" name="userId" required>

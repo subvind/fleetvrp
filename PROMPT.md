@@ -39,7 +39,7 @@ export class ManagerService {
     private managerRepository: Repository<Manager>,
   ) {}
 
-  async findAll(search?: string, page: number = 1, limit: number = 20): Promise<Manager[]> {
+  async findAll(search?: string, page: number = 1, limit: number = 20): Promise<{ managers: Manager[], total: number }> {
     const query = this.managerRepository.createQueryBuilder('manager')
       .leftJoinAndSelect('manager.user', 'user');
 
@@ -47,9 +47,13 @@ export class ManagerService {
       query.where('manager.name LIKE :search OR user.email LIKE :search', { search: `%${search}%` });
     }
 
+    const total = await query.getCount();
+
     query.skip((page - 1) * limit).take(limit);
 
-    return query.getMany();
+    const managers = await query.getMany();
+
+    return { managers, total };
   }
 
   async create(managerData: { name: string, userId: string }): Promise<Manager> {
@@ -109,10 +113,16 @@ export class OwnerController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 20,
   ) {
-    const managers = await this.managerService.findAll(search, page, limit);
+    const { managers, total } = await this.managerService.findAll(search, page, limit);
+    const totalPages = Math.ceil(total / limit);
     return {
       layout: false,
       managers,
+      currentPage: page,
+      totalPages,
+      limit,
+      search,
+      total
     };
   }
 
@@ -156,9 +166,26 @@ export class OwnerController {
   }
 
   @Put('managers/:id')
-  async managersUpdated(@Param('id') id: string, @Body() managerData: { name?: string, userId?: string }) {
+  @Render('modules/owner/managers/list')
+  async managersUpdated(
+    @Param('id') id: string,
+    @Body() managerData: { name?: string, userId?: string },
+    @Query('search') search?: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20
+  ) {
     await this.managerService.update(id, managerData);
-    return this.managersList();
+    const { managers, total } = await this.managerService.findAll(search, page, limit);
+    const totalPages = Math.ceil(total / limit);
+    return {
+      layout: false,
+      managers,
+      currentPage: page,
+      totalPages,
+      limit,
+      search,
+      total
+    };
   }
 
   @Delete('managers/:id')
@@ -509,10 +536,13 @@ export class UserService {
 ### ./views/modules/owner/managers/edit.ejs
 ```ejs
 <h3>Edit Manager</h3>
-<form hx-put="/htmx/modules/owner/managers/<%= manager.id %>" hx-target="#managers-list" hx-swap="outerHTML">
+<form hx-put="/htmx/modules/owner/managers/<%= manager.id %>" 
+      hx-target="#managers-list" 
+      hx-swap="innerHTML"
+      hx-trigger="submit">
   <div class="input-field">
     <input type="text" id="name" name="name" value="<%= manager.name %>" required>
-    <label for="name">Name</label>
+    <label for="name" class="active">Name</label>
   </div>
   <div class="input-field">
     <select id="userId" name="userId" required>
@@ -562,6 +592,16 @@ export class UserService {
     }); %>
     <br />
     <div class="container">
+
+      <!-- Create manager button -->
+      <button class="btn waves-effect waves-light blue darken-2 right"
+              hx-get="/htmx/modules/owner/managers/create"
+              hx-target="#managers-content"
+              style="margin-top: 1em;">
+        Create Manager
+        <i class="material-icons right">add</i>
+      </button>
+
       <h2>Managers</h2>
       
       <!-- HTMX-powered search input -->
@@ -600,22 +640,15 @@ export class UserService {
         });
       </script>
 
+      <br />
+
       <!-- Managers list -->
       <div id="managers-list" hx-get="/htmx/modules/owner/managers/list" hx-trigger="load">
         <!-- The list will be loaded here -->
       </div>
 
-      <div style="overflow: hidden;">
-        <!-- Create manager button -->
-        <button class="btn waves-effect waves-light blue darken-2 right"
-                hx-get="/htmx/modules/owner/managers/create"
-                hx-target="#managers-content">
-          Create Manager
-          <i class="material-icons right">add</i>
-        </button>
-        <br />
-        <br />
-      </div>
+      <br />
+      <br />
 
       <!-- Manager content (for create/edit/view) -->
       <div id="managers-content">
@@ -640,7 +673,7 @@ export class UserService {
 
 ### ./views/modules/owner/managers/list.ejs
 ```ejs
-<div class="card">
+<div class="card" style="margin: 0;">
   <table class="striped">
     <thead style="background: #ccc;">
       <tr>
@@ -668,7 +701,8 @@ export class UserService {
             <button class="btn-small waves-effect waves-light red"
                     hx-delete="/htmx/modules/owner/managers/<%= manager.id %>"
                     hx-confirm="Are you sure you want to delete this manager?"
-                    hx-target="#managers-list">
+                    hx-target="#managers-list"
+                    hx-swap="innerHTML">
               Delete
             </button>
           </td>
@@ -676,8 +710,96 @@ export class UserService {
       <% }); %>
     </tbody>
   </table>
-
 </div>
+
+<% currentPage = parseInt(currentPage); %>
+
+<div class="row list-footer" style="margin: 0 -1.5em;">
+  <div class="col s12 m6 left-side">
+    <ul class="pagination">
+      <li class="<%= currentPage <= 1 ? 'disabled' : '' %>">
+        <button
+          id="paginationBack"
+          class="btn-flat"
+          hx-trigger="click"
+          hx-get="/htmx/modules/owner/managers/list?search=<%= search %>&page=<%= currentPage - 1 %>&limit=<%= limit %>"
+          hx-target="#managers-list"
+          hx-swap="innerHTML"
+          <%= currentPage <= 1 ? 'disabled="true"' : '' %>
+        >
+          <i class="material-icons">chevron_left</i>
+        </button>
+        <script>
+          document.getElementById('paginationBack').addEventListener('click', function() {
+            var queryParams = new URLSearchParams(window.location.search);
+            queryParams.set('page', '<%= currentPage - 1 %>');
+            history.pushState(null, null, '?' + queryParams.toString());
+          })
+        </script>
+      </li>
+      <% Array.from({ length: totalPages }, (_, i) => i + 1).forEach((page, index) => { %>
+        <li>
+          <button
+            id="paginationNext<%= index %>"
+            class="btn-flat waves-effect <%= currentPage === page ? 'active-page-number' : null %>"
+            hx-trigger="click"
+            hx-get="/htmx/modules/owner/managers/list?search=<%= search %>&page=<%= page %>&limit=<%= limit %>"
+            hx-target="#managers-list"
+            hx-swap="innerHTML"
+          >
+            <%= page %>
+          </button>
+          <script>
+            document.getElementById('paginationNext<%= index %>').addEventListener('click', function() {
+              var queryParams = new URLSearchParams(window.location.search);
+              queryParams.set('page', '<%= page %>');
+              history.pushState(null, null, '?' + queryParams.toString());
+            })
+          </script>
+        </li>
+      <% }); %>
+      <li class="<%= currentPage >= totalPages ? 'disabled' : '' %>">
+        <button 
+          id="paginationForward"
+          class="btn-flat"
+          hx-trigger="click" 
+          hx-get="/htmx/modules/owner/managers/list?search=<%= search %>&page=<%= currentPage + 1 %>&limit=<%= limit %>"
+          hx-target="#managers-list"
+          hx-swap="innerHTML"
+          <%= currentPage >= totalPages ? 'disabled="true"' : '' %>
+        >
+          <i class="material-icons">chevron_right</i>
+        </button>
+        <script>
+          document.getElementById('paginationForward').addEventListener('click', function() {
+            var queryParams = new URLSearchParams(window.location.search);
+            queryParams.set('page', '<%= currentPage + 1 %>');
+            history.pushState(null, null, '?' + queryParams.toString());
+          })
+        </script>
+      </li>
+    </ul>
+  </div>
+  <div class="col s12 m6 right-side">
+    <div style="padding: 1em; text-align: right;">
+      showing <%= limit * currentPage - limit + 1 %>-<%= Math.min(limit * currentPage, total) %> of <%= total %> results
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('htmx:afterOnLoad', function() {
+    M.AutoInit();
+  });
+</script>
+
+<style>
+  .active-page-number:focus,
+  .active-page-number {
+    background: #000;
+    color: #fff;
+  }
+</style>
 ```
 
 ### ./views/modules/owner/managers/view.ejs
@@ -730,7 +852,7 @@ export class UserService {
 
 ### ./CURRENT_ERROR.md
 ```md
-managers does not have pagination 
+durring edit manager when i click delete it just swaps out the table with json
 ```
 
 ### ./TODO.md
